@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Actividad de consultoría: cada equipo diseña, construye y evalúa el sistema con el que va a manejar las fuentes de su proyecto, y mide cuánto inventa la IA con y sin él.">
+    <title>Enunciado — Nada sin fuente</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Montserrat', 'Helvetica Neue', 'Arial', 'sans-serif'] },
+                    colors: {
+                        primary: '#3D008D', secondary: '#ED1E79', navy: '#001A4D',
+                        gold: '#FDB913', teal: '#0E7490', bg: '#F8FAFC', surface: '#FFFFFF',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #F8FAFC;
+            color: #1E293B;
+            scroll-behavior: smooth;
+        }
+
+        code, pre, .mono { font-family: 'Fira Code', monospace; }
+
+        .lp-gradient { background: linear-gradient(140deg, #3D008D 0%, #ED1E79 100%); }
+        .lp-header { background: linear-gradient(180deg, #001A4D 0%, #002868 100%); }
+
+        .lp-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 10px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #3D008D, #ED1E79); border-radius: 4px; }
+
+        button:focus-visible, a:focus-visible, input:focus-visible {
+            outline: 2px solid #ED1E79;
+            outline-offset: 2px;
+        }
+
+        .inline-code {
+            background: #F1F5F9;
+            color: #0F172A;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.88em;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .prosa p { margin-bottom: 0.9rem; line-height: 1.75; }
+        .prosa ul { list-style: disc; padding-left: 1.4rem; margin-bottom: 0.9rem; }
+        .prosa ol { list-style: decimal; padding-left: 1.4rem; margin-bottom: 0.9rem; }
+        .prosa li { margin-bottom: 0.4rem; line-height: 1.7; }
+        .prosa strong { color: #0F172A; }
+
+        .ancla { scroll-margin-top: 5.5rem; }
+
+        /* La plantilla se copia y se pega; conviene que se vea como un
+           documento y no como parte de la página. */
+        .plantilla {
+            background: #FCFCFE;
+            border: 1px dashed #CBD5E1;
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            line-height: 1.8;
+            color: #334155;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        /* Las tablas del enunciado tienen hasta cinco columnas: en un
+           teléfono se desplazan en lugar de reventar el ancho. */
+        .tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .tabla-scroll table { min-width: 34rem; }
+
+        .item-check {
+            display: flex;
+            gap: 0.7rem;
+            align-items: flex-start;
+            padding: 0.55rem 0.7rem;
+            border-radius: 10px;
+            transition: background .15s;
+        }
+
+        .item-check:hover { background: #F8FAFC; }
+        .item-check input { margin-top: 0.28rem; width: 1rem; height: 1rem; accent-color: #ED1E79; flex-shrink: 0; }
+        .item-check input:checked + span { color: #94A3B8; text-decoration: line-through; }
+
+        @media print {
+            .no-print { display: none !important; }
+            body { background: #fff; }
+            .lp-card { box-shadow: none; border: 1px solid #E2E8F0; }
+            .salto { break-before: page; }
+            .tabla-scroll { overflow-x: visible; }
+            .tabla-scroll table { min-width: 0; }
+            @page { size: A4 portrait; margin: 15mm; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="no-print sticky top-0 z-50 lp-header shadow-lg">
+        <div class="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-3">
+                <span class="lp-gradient w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-md">
+                    <i class="fas fa-book-open-reader"></i>
+                </span>
+                <div>
+                    <p class="text-[0.6rem] uppercase tracking-widest text-gold font-bold">Universidad Santo Tomás</p>
+                    <p class="text-white text-sm font-bold leading-tight">Enunciado · Consultoría</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1 text-xs flex-wrap">
+                <a href="#encargo" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">El encargo</a>
+                <a href="#marco" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">Qué atacan</a>
+                <a href="#alcance" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">Alcance</a>
+                <a href="#calendario" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">Calendario</a>
+                <a href="#entregas" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">Entregas</a>
+                <a href="#sustentacion" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">Sustentación</a>
+                <a href="#nota" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">Nota</a>
+                <a href="#ia" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">Uso de IA</a>
+                <a href="#preguntas" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">Preguntas</a>
+                <a href="#lista" class="px-3 py-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors">Lista final</a>
+                <button onclick="window.print()"
+                    class="ml-2 px-3 py-1.5 rounded-lg lp-gradient text-white font-semibold hover:opacity-90 transition-opacity">
+                    <i class="fas fa-print mr-1"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-5 py-10">
+
+        <header class="lp-card p-8 mb-10 text-center border border-gray-100">
+            <p class="text-xs uppercase tracking-widest text-secondary font-bold mb-2">
+                Consultoría · Actividad evaluativa · 30 % del corte
+            </p>
+            <h1 class="text-3xl font-bold text-primary mb-1">
+                Nada sin fuente
+            </h1>
+            <p class="text-base font-semibold text-navy mb-3">
+                Gestión de información e IA en su proyecto
+            </p>
+            <p class="text-gray-600 font-light max-w-2xl mx-auto">
+                Hagan que la IA responda solo con lo que se puede comprobar. Y midan cuánto se equivoca cuando no.
+            </p>
+            <div class="flex justify-center flex-wrap gap-2 mt-5 text-xs">
+                <span class="px-3 py-1 rounded-full bg-primary/10 text-primary"><i class="fas fa-users mr-1"></i>Equipos del proyecto (1 a 3)</span>
+                <span class="px-3 py-1 rounded-full bg-primary/10 text-primary"><i class="fas fa-calendar-days mr-1"></i>3 semanas</span>
+                <span class="px-3 py-1 rounded-full bg-primary/10 text-primary"><i class="fas fa-microphone mr-1"></i>Sustentación 10 min + 5 por integrante</span>
+                <span class="px-3 py-1 rounded-full bg-secondary/10 text-secondary font-semibold"><i class="fas fa-percent mr-1"></i>30 % del corte</span>
+            </div>
+        </header>
+
+        <!-- ===================== EL ENCARGO ===================== -->
+        <section id="encargo" class="ancla mb-12">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-bullseye text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">El encargo</h2>
+            </div>
+
+            <div class="lp-card p-6 mb-5 prosa text-[0.97rem] text-gray-700">
+                <p>
+                    Ya construyeron un agente. Ya entregaron un anteproyecto. En los dos, alguna herramienta de IA les
+                    puso algo que no existía: una referencia que no abre, una cifra que nadie midió, una función que
+                    ningún manual documenta. Algunos lo detectaron. Otros lo detectaron cuando ya estaba entregado.
+                </p>
+                <p>
+                    Esta actividad empieza ahí, y no es una clase de precaución. Es una de ingeniería: <strong>el resto
+                        del semestre van a seguir usando IA sobre su proyecto, y necesitan un sistema que haga
+                        rastreable lo que produzcan.</strong> No un propósito, no una promesa de revisar mejor. Un
+                    sistema: dónde viven las fuentes, cómo se cargan, qué se le permite responder al modelo, qué
+                    responde cuando no sabe, y cómo se comprueba.
+                </p>
+                <p class="mb-0">
+                    Lo van a construir sobre su propio proyecto —las fuentes del estado del arte que ya entregaron y
+                    los documentos de su contraparte—, y al final me lo van a demostrar en vivo: yo señalo una frase
+                    de su anteproyecto y ustedes me muestran de dónde sale.
+                </p>
+            </div>
+
+            <div class="rounded-xl px-5 py-4 border-l-4 bg-[#ECFEFF] mb-5" style="border-color:#0E7490">
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                    <strong class="text-teal">Equipos de uno, dos o tres.</strong> Se trabaja en los mismos equipos
+                    del proyecto, del tamaño que ya tienen. La actividad se ajusta al número de integrantes en tres
+                    puntos, y en ningún otro: <strong>el experimento</strong> crece una consulta por persona,
+                    <strong>la sustentación</strong> dura cinco minutos más por persona, y <strong>la medición del
+                        acuerdo</strong> cambia de forma para quien trabaja solo. Todo lo demás —el corpus, el
+                    sistema, el banco de preguntas, la memoria— es igual para todos, porque el trabajo de montar un
+                    sistema de fuentes no se divide por el número de personas que lo usan.
+                </p>
+            </div>
+
+            <div class="rounded-xl px-5 py-4 border-l-4 bg-[#F5F0FA] mb-6" style="border-color:#3D008D">
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                    <strong class="text-primary">Esto no es un taller de herramientas.</strong> Van a comparar
+                    herramientas, sí, pero lo que se evalúa es el criterio con que eligieron una y la evidencia con
+                    que la defienden. La herramienta que elijan hoy probablemente cambie de nombre en dos años. El
+                    criterio no.
+                </p>
+            </div>
+
+            <h3 class="text-lg font-bold text-navy mb-4">Tres cosas que no son negociables</h3>
+
+            <div class="grid md:grid-cols-3 gap-5">
+                <div class="lp-card p-5 border-t-4" style="border-color:#ED1E79">
+                    <p class="text-xs uppercase tracking-wider font-bold text-secondary mb-2">
+                        <i class="fas fa-link mr-1"></i> Nada sin fuente.
+                    </p>
+                    <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                        Toda afirmación que salga de una herramienta de IA y entre a su proyecto tiene que tener
+                        documento y ubicación: página, sección o cita textual. Lo que no esté en su gestor de
+                        referencias, no existe. No es una regla de estilo: es la condición para que alguien más —yo,
+                        un jurado, su contraparte— pueda verificar lo que afirman.
+                    </p>
+                </div>
+                <div class="lp-card p-5 border-t-4" style="border-color:#3D008D">
+                    <p class="text-xs uppercase tracking-wider font-bold text-primary mb-2">
+                        <i class="fas fa-chart-simple mr-1"></i> Se mide, no se opina.
+                    </p>
+                    <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                        La herramienta que elijan se defiende con un conteo, no con una reseña. «Nos pareció más
+                        confiable» no es un argumento en una carrera de Estadística. Van a hacer un experimento
+                        pequeño, con un control, y van a reportar una proporción con su incertidumbre.
+                    </p>
+                </div>
+                <div class="lp-card p-5 border-t-4" style="border-color:#0E7490">
+                    <p class="text-xs uppercase tracking-wider font-bold text-teal mb-2">
+                        <i class="fas fa-lock mr-1"></i> Los datos de la contraparte no salen de la máquina sin acuerdo escrito.
+                    </p>
+                    <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                        Subir en claro documentos de su contraparte a un servicio en la nube, sin que ella lo haya
+                        autorizado por escrito, deja el criterio C2 en Insuficiente. Si esos documentos tienen datos
+                        personales, además se maneja por la vía reglamentaria. Ya hicieron esto bien una vez con
+                        datos institucionales; aquí aplica igual.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== MARCO ===================== -->
+        <section id="marco" class="ancla mb-12">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-crosshairs text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Qué están atacando exactamente</h2>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-5 max-w-3xl">
+                La palabra «alucinación» se usa para tres fallas distintas que se arreglan de formas distintas.
+                Confundirlas es la razón por la que mucha gente monta un sistema elaborado que no resuelve su problema
+                real. Antes de elegir herramienta, ubiquen cuál es la suya.
+            </p>
+
+            <h3 class="text-base font-bold text-navy mb-3">Tres tipos de alucinación, tres remedios</h3>
+
+            <div class="lp-card p-6 mb-5">
+                <div class="tabla-scroll">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Qué inventa el modelo</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy w-28">Es un problema de</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Se resuelve con</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Herramientas de esa familia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-200 text-gray-700"><strong class="text-navy">Referencias que no existen</strong>, o que existen pero no dicen lo que se les atribuye</td>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-primary">búsqueda</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">buscar con herramientas conectadas a bases bibliográficas reales, y abrir cada referencia</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">Semantic Scholar, Elicit, Consensus, Scite, Perplexity</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 text-gray-700"><strong class="text-navy">Afirmaciones falsas sobre documentos que ustedes ya tienen</strong></td>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-primary">anclaje</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">contexto cerrado con cita obligatoria: el modelo solo responde sobre sus archivos, y señala de dónde</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">NotebookLM, proyectos con archivos, búsqueda en archivos por API, RAG propio</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-200 text-gray-700"><strong class="text-navy">Cálculos y razonamientos</strong> que suenan bien y están mal</td>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-teal">herramientas</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">que el modelo ejecute código en vez de estimar, y que la salida se valide</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">lo que ya hicieron con <span class="inline-code">pydantic</span> en el agente</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed mt-4 mb-0">
+                    Fíjense en la consecuencia práctica: <strong class="text-navy">el contexto cerrado no arregla las
+                        referencias inventadas.</strong> Si le dan a una herramienta sus veinte PDF y le piden diez
+                    referencias más, va a inventar las diez. Solo recupera lo que está en el índice. Por eso el
+                    experimento de la semana 1 separa las dos cosas.
+                </p>
+            </div>
+
+            <h3 class="text-base font-bold text-navy mb-3">Tres vías para el anclaje</h3>
+
+            <p class="text-sm text-gray-600 mb-4 max-w-3xl">
+                Todas hacen lo mismo —recuperar fragmentos de sus documentos y pasárselos al modelo antes de que
+                responda—. Se diferencian en cuánto controlan, dónde quedan los datos y cuánto cuesta montarlas.
+            </p>
+
+            <div class="lp-card p-6 mb-5">
+                <div class="tabla-scroll">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy w-32">Vía</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Ejemplos</th>
+                                <th class="text-center p-2 border border-gray-200 bg-[#F5F0FA] text-navy w-20">Control</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Dónde quedan los datos</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Esfuerzo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Empaquetada</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">NotebookLM; proyectos con archivos de Claude, ChatGPT o Gemini</td>
+                                <td class="p-2 border border-gray-200 text-center text-gray-600">bajo</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">nube del proveedor</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">horas</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Gestionada</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">búsqueda en archivos de la API de Claude, Gemini u OpenAI</td>
+                                <td class="p-2 border border-gray-200 text-center text-gray-600">medio</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">nube del proveedor</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">días</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Propia</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">Ollama + un modelo de embeddings de pesos abiertos + Chroma o LanceDB</td>
+                                <td class="p-2 border border-gray-200 text-center text-gray-600">alto</td>
+                                <td class="p-2 border border-gray-200 font-bold text-teal">local</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">una a dos semanas</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed mt-4 mb-0">
+                    La vía propia es <strong class="text-navy">opcional</strong>, y es la única puerta al nivel
+                    Ejemplar del criterio de implementación. Más abajo digo exactamente qué gana y qué cuesta.
+                </p>
+            </div>
+
+            <div class="rounded-xl px-5 py-4 border-l-4 bg-[#FFFBEB]" style="border-color:#B45309">
+                <span class="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-wider font-bold rounded mb-2 px-2 py-0.5 text-white" style="background:#B45309">
+                    <i class="fas fa-triangle-exclamation"></i> Embeddings en español, y una advertencia de privacidad
+                </span>
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-3">
+                    <strong>Si sus documentos están en español, no den por hecho el modelo de embeddings.</strong>
+                    Varios de los modelos abiertos más citados se entrenaron sobre todo en inglés, y sus primeras
+                    versiones rinden notoriamente peor en español. Comparen la variante multilingüe con al menos una
+                    alternativa (por ejemplo <span class="inline-code">bge-m3</span> o
+                    <span class="inline-code">multilingual-e5</span>) sobre sus propias preguntas. Esa comparación,
+                    medida, es de las cosas que mejor se defienden en C3.
+                </p>
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                    Y una advertencia de privacidad: los servicios de visualización de corpus en la nube —Nomic Atlas
+                    y equivalentes— suben sus fragmentos al proveedor. Úsenlos con artículos públicos, nunca con
+                    documentos de la contraparte.
+                </p>
+            </div>
+        </section>
+
+        <!-- ===================== ALCANCE ===================== -->
+        <section id="alcance" class="ancla mb-12">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-ruler-combined text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Qué cabe en tres semanas</h2>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-5 max-w-3xl">
+                Igual que en la actividad anterior: calibrar el tamaño es la decisión más importante, y la toman en
+                los primeros días.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-5 mb-5">
+                <div class="lp-card overflow-hidden">
+                    <div class="px-5 py-3 flex items-center gap-3" style="background:linear-gradient(135deg,#15803D 0%,#22A05A 100%)">
+                        <span class="bg-white/20 rounded-lg w-9 h-9 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check text-white"></i>
+                        </span>
+                        <div class="text-white font-bold text-base">Cabe</div>
+                    </div>
+                    <div class="px-5 py-4 prosa text-sm text-gray-700" style="background:#F0FDF4">
+                        <ul class="mb-0">
+                            <li>Un corpus de <strong>10 a 40 documentos que ya tienen</strong>: las fuentes de su
+                                estado del arte y los documentos que su contraparte ya les entregó.</li>
+                            <li>Un experimento con <strong>tres tratamientos, uno de ellos el control</strong>, sobre
+                                una consulta de su tema por integrante.</li>
+                            <li>Un banco de <strong>15 a 20 preguntas con respuesta conocida</strong> sobre su propio
+                                corpus.</li>
+                            <li>Si toman la vía propia: <strong>una sola colección, un solo modelo de
+                                    embeddings</strong>, indexada y evaluada.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="lp-card overflow-hidden">
+                    <div class="px-5 py-3 flex items-center gap-3" style="background:linear-gradient(135deg,#B91C1C 0%,#EF4444 100%)">
+                        <span class="bg-white/20 rounded-lg w-9 h-9 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-xmark text-white"></i>
+                        </span>
+                        <div class="text-white font-bold text-base">No cabe</div>
+                    </div>
+                    <div class="px-5 py-4 prosa text-sm text-gray-700" style="background:#FEF2F2">
+                        <ul class="mb-0">
+                            <li><strong>Recolectar un corpus nuevo.</strong> Si el documento todavía no está en su
+                                carpeta, no entra.</li>
+                            <li><strong>Ajustar o reentrenar un modelo</strong> (<em>fine-tuning</em>), incluido el de
+                                embeddings.</li>
+                            <li><strong>Construir otro agente.</strong> Ya lo hicieron. Esto se monta sobre lo que
+                                existe.</li>
+                            <li><strong>Evaluar sin respuesta conocida.</strong> «Le preguntamos y nos pareció que
+                                respondía bien» no es una evaluación.</li>
+                            <li><strong>RAG multimodal, multiagente o sobre varias colecciones.</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-xl px-5 py-4 border-l-4 bg-[#FFFBEB]" style="border-color:#B45309">
+                <span class="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-wider font-bold rounded mb-2 px-2 py-0.5 text-white" style="background:#B45309">
+                    <i class="fas fa-key"></i> La regla que resuelve casi todas las dudas
+                </span>
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                    <strong>Si una pregunta no tiene respuesta conocida y localizable en un documento suyo, no sirve
+                        para evaluar.</strong> Todo lo que van a medir sale de ahí. Y la advertencia del error
+                    contrario, que el semestre pasado fue el más común: si su sistema es subir cinco PDF a un chat y
+                    pedirle por favor que no invente, no construyeron nada que puedan defender veinte minutos.
+                </p>
+            </div>
+        </section>
+
+        <!-- ===================== CALENDARIO ===================== -->
+        <section id="calendario" class="ancla mb-12">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-calendar-days text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Las tres semanas</h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-5 mb-5">
+                <div class="lp-card p-5 border-t-4" style="border-color:#ED1E79">
+                    <div class="flex items-baseline justify-between mb-2">
+                        <span class="text-xs font-bold text-secondary uppercase tracking-wider">Semana 1</span>
+                        <span class="text-xs text-gray-400 mono">____ / ____</span>
+                    </div>
+                    <p class="font-bold text-navy text-sm mb-2">Diagnóstico y decisión</p>
+                    <p class="text-sm text-gray-700 leading-relaxed">
+                        Cada integrante escribe <strong>por separado</strong> su inventario de fallos: qué le inventó
+                        la IA en el agente o en el anteproyecto, cómo lo detectó —o cómo se enteró de que no lo había
+                        detectado— y qué le costó. Después, juntos, corren el experimento, arman la tabla de criterios
+                        y eligen.
+                    </p>
+                    <p class="mt-3 text-xs font-bold text-secondary bg-secondary/10 rounded-lg px-3 py-2">
+                        <i class="fas fa-flag-checkered mr-1"></i>Cierra con el <strong>visto bueno del protocolo</strong>. Obligatorio, sin nota.
+                    </p>
+                </div>
+
+                <div class="lp-card p-5 border-t-4" style="border-color:#3D008D">
+                    <div class="flex items-baseline justify-between mb-2">
+                        <span class="text-xs font-bold text-primary uppercase tracking-wider">Semana 2</span>
+                        <span class="text-xs text-gray-400 mono">____ / ____</span>
+                    </div>
+                    <p class="font-bold text-navy text-sm mb-2">Construcción</p>
+                    <p class="text-sm text-gray-700 leading-relaxed">
+                        Biblioteca en el gestor, carpeta de documentos con su README de procedencia, tabla de
+                        trazabilidad del estado del arte que ya entregaron —re-verificado, y corregido donde haga
+                        falta—, y el protocolo de prompts con su ruta de abstención. Quien tome la vía propia, indexa.
+                    </p>
+                    <p class="mt-3 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
+                        <i class="fas fa-triangle-exclamation mr-1 text-[#B45309]"></i>
+                        <strong class="text-navy">Al cerrar la semana tiene que existir algo que responda con
+                            cita</strong>, aunque responda mal. Lo que no responde en la semana 2 no se evalúa en la 3.
+                    </p>
+                </div>
+
+                <div class="lp-card p-5 border-t-4" style="border-color:#0E7490">
+                    <div class="flex items-baseline justify-between mb-2">
+                        <span class="text-xs font-bold text-teal uppercase tracking-wider">Semana 3</span>
+                        <span class="text-xs text-gray-400 mono">____ / ____</span>
+                    </div>
+                    <p class="font-bold text-navy text-sm mb-2">Evaluación y entrega</p>
+                    <p class="text-sm text-gray-700 leading-relaxed">
+                        Banco de preguntas, medición por tratamiento, caso de fallo, auditoría cruzada con el equipo
+                        que yo les asigne, memoria y ensayo de los veinte minutos con el sistema abierto y
+                        funcionando.
+                    </p>
+                    <p class="mt-3 text-xs font-bold text-teal bg-teal/10 rounded-lg px-3 py-2">
+                        <i class="fas fa-microphone mr-1"></i>Cierra con la <strong>sustentación</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="lp-card p-6 border-l-4 mb-5" style="border-color:#ED1E79">
+                <h3 class="text-secondary font-semibold text-base mb-2">
+                    <i class="fas fa-stamp mr-2"></i>El visto bueno del protocolo — no lleva nota, pero es obligatorio
+                </h3>
+                <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                    Al cerrar la semana 1 me traen <strong>media página</strong> y conversamos diez minutos. No se
+                    califica: se aprueba o se devuelve para ajustar. Traen cuatro cosas:
+                </p>
+                <ol class="text-sm text-gray-700 prosa mb-3">
+                    <li>Qué encontraron en el experimento, con el conteo.</li>
+                    <li>Qué herramienta eligieron y contra cuáles la compararon.</li>
+                    <li>Cuál es su corpus: cuántos documentos, de dónde salen, si hay datos de la contraparte.</li>
+                    <li>Cómo van a evaluar: de dónde van a salir las preguntas con respuesta conocida.</li>
+                </ol>
+                <p class="text-sm text-gray-700 leading-relaxed mb-0 pt-3 border-t border-gray-100">
+                    <strong>Sin visto bueno no se empieza a construir.</strong> Existe porque un protocolo mal
+                    dimensionado no se nota en la semana 2, se nota en la sustentación, y ahí ya no hay nada que
+                    hacer. El caso típico que devuelvo: equipos que planean evaluar con preguntas cuya respuesta nadie
+                    conoce de antemano.
+                </p>
+            </div>
+
+            <div class="lp-card p-6 mb-5">
+                <h3 class="text-primary font-semibold text-base mb-3">
+                    <i class="fas fa-flask-vial mr-2"></i>El experimento de la semana 1 — cómo se hace
+                </h3>
+                <p class="text-sm text-gray-700 leading-relaxed mb-4">
+                    <strong>Una consulta bibliográfica real de su tema por cada integrante del equipo</strong>
+                    —una si trabajan solos, dos si son dos, tres si son tres—. Cada consulta se corre en los tres
+                    tratamientos:
+                </p>
+
+                <div class="tabla-scroll mb-4">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="text-center p-2 border border-gray-200 bg-[#F5F0FA] text-navy w-12"></th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Tratamiento</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Qué representa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-secondary mono">A</td>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Chat sin fuentes ni navegación</td>
+                                <td class="p-2 border border-gray-200 text-gray-600"><strong class="text-navy">el control</strong>: lo que hacía la mayoría el semestre pasado</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 text-center font-bold text-secondary mono">B</td>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Buscador conectado a bases bibliográficas reales</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">el remedio al problema de búsqueda</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-secondary mono">C</td>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Contexto cerrado con sus propios PDF</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">el remedio al problema de anclaje</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                    De cada respuesta toman <strong>al menos cinco referencias</strong>, las abren una por una y las
+                    clasifican en una de tres categorías:
+                </p>
+                <ul class="text-sm text-gray-700 prosa mb-4">
+                    <li><strong>Utilizable:</strong> existe y dice lo que se le atribuye.</li>
+                    <li><strong>Existe pero no dice eso:</strong> la referencia es real, la afirmación no se sostiene.</li>
+                    <li><strong>No existe:</strong> no se encuentra por DOI ni por título.</li>
+                </ul>
+                <p class="text-sm text-gray-700 leading-relaxed mb-4">
+                    Reportan la <strong>proporción de referencias utilizables por tratamiento, con su intervalo de
+                        confianza</strong>, y la interpretan con honestidad: con quince referencias por tratamiento los
+                    intervalos son anchos, y decirlo vale más que ocultarlo.
+                </p>
+                <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                    <strong class="text-navy">Y reportan cuánto se contradice la clasificación.</strong> Cómo se mide
+                    depende del tamaño del equipo:
+                </p>
+
+                <div class="tabla-scroll mb-4">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy w-36">Equipo</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy w-52">Qué se mide</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Cómo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">2 o 3 integrantes</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">acuerdo <strong class="text-navy">entre</strong> clasificadores</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">cada integrante clasifica las mismas referencias por separado, sin consultarse; se reporta en cuántas no coincidieron</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">1 integrante</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">consistencia <strong class="text-navy">consigo mismo</strong></td>
+                                <td class="p-2 border border-gray-200 text-gray-600">clasifica todo, deja pasar <strong class="text-navy">48 horas sin mirar sus resultados</strong>, vuelve a clasificar desde cero y compara las dos pasadas</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="text-sm text-gray-700 leading-relaxed mb-4">
+                    En los dos casos el hallazgo es el mismo y se discute igual: <strong>dónde no coincidieron y por
+                        qué</strong>. La categoría intermedia —«existe pero no dice eso»— es la que suele producir el
+                    desacuerdo, y eso es un dato sobre lo difícil que es verificar, no un error que haya que esconder.
+                    Quien trabaje solo va a descubrir algo incómodo y valioso: que no siempre está de acuerdo consigo
+                    mismo.
+                </p>
+
+                <div class="rounded-xl px-5 py-4 border-l-4 bg-[#ECFEFF]" style="border-color:#0E7490">
+                    <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                        <i class="fas fa-circle-info text-teal mr-1"></i>
+                        Son estudiantes de Estadística evaluando una herramienta con un diseño experimental sobre su
+                        propio trabajo. <strong>Si el conteo les sale raro, esa rareza es el hallazgo.</strong>
+                    </p>
+                </div>
+            </div>
+
+            <div class="lp-card p-6">
+                <h3 class="text-primary font-semibold text-base mb-3">
+                    <i class="fas fa-table-columns mr-2"></i>La tabla de decisión
+                </h3>
+                <p class="text-sm text-gray-700 leading-relaxed mb-4">
+                    Después del experimento, una tabla de herramientas por criterios. Estos seis, como mínimo:
+                </p>
+                <div class="tabla-scroll mb-4">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy w-56">Criterio</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">La pregunta que responde</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Contexto cerrado</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Responde solo sobre lo que le dimos?</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Cita con localización</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Dice documento y página, o solo «según los archivos»?</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Privacidad</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Dónde quedan los documentos de la contraparte?</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Costo</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Lo puede sostener el equipo hasta diciembre?</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Exportación a APA 7</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿O hay que rehacer las referencias a mano?</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">Reproducibilidad</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Otra persona puede rehacer el índice y obtener lo mismo?</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                    Eligen una y <strong>declaran cuáles descartaron y por qué</strong>. Descartar bien se califica
+                    igual que elegir bien.
+                </p>
+            </div>
+        </section>
+
+        <!-- ===================== ENTREGAS ===================== -->
+        <section id="entregas" class="ancla mb-12 salto">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-box-open text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Qué deben entregar</h2>
+            </div>
+
+            <div class="space-y-4">
+
+                <div class="lp-card p-5 border-l-4" style="border-color:#ED1E79">
+                    <div class="flex items-start gap-4">
+                        <span class="lp-gradient text-white font-bold rounded-xl w-9 h-9 flex items-center justify-center flex-shrink-0">1</span>
+                        <div class="flex-1">
+                            <p class="font-bold text-navy mb-1">Inventario de fallos <span class="text-xs font-normal text-gray-500">· ½ página · <strong class="text-secondary">individual</strong> · semana 1</span></p>
+                            <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                                Uno por integrante, firmado por su autor: uno si trabajan solos, tres si son
+                                tres. Es el único entregable individual del documento, y existe porque el diagnóstico
+                                no se delega.
+                            </p>
+                            <p class="text-xs uppercase tracking-wider font-bold text-gray-400 mb-1">Plantilla</p>
+                            <div class="plantilla">INVENTARIO DE FALLOS — [nombre]
+
+Herramienta:
+Qué generó:
+Qué estaba mal:
+Cómo lo detecté: (o: cómo me enteré de que no lo había detectado)
+Qué me costó: (tiempo, una nota, una corrección después de entregar)
+Qué lo habría evitado:</div>
+                            <p class="text-sm text-gray-700 leading-relaxed mt-3 mb-0">
+                                Repítanlo para <strong>al menos tres fallos</strong>. Si creen que no tuvieron
+                                ninguno, revisen las referencias de su anteproyecto antes de afirmarlo: es justo lo
+                                que va a hacer el equipo auditor.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lp-card p-5 border-l-4" style="border-color:#ED1E79">
+                    <div class="flex items-start gap-4">
+                        <span class="lp-gradient text-white font-bold rounded-xl w-9 h-9 flex items-center justify-center flex-shrink-0">2</span>
+                        <div class="flex-1">
+                            <p class="font-bold text-navy mb-1">Experimento y decisión <span class="text-xs font-normal text-gray-500">· 2 páginas · semana 1</span></p>
+                            <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                                El diseño, la tabla de conteos, las proporciones con intervalo, el acuerdo o la
+                                consistencia de la clasificación, la tabla de decisión y la herramienta elegida con
+                                sus alternativas descartadas. Va al visto bueno de la semana 1 y, corregido, a la
+                                memoria final.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lp-card p-5 border-l-4" style="border-color:#3D008D">
+                    <div class="flex items-start gap-4">
+                        <span class="lp-gradient text-white font-bold rounded-xl w-9 h-9 flex items-center justify-center flex-shrink-0">3</span>
+                        <div class="flex-1">
+                            <p class="font-bold text-navy mb-1">El sistema de fuentes <span class="text-xs font-normal text-gray-500">· semanas 2 y 3</span></p>
+                            <p class="text-sm text-gray-700 leading-relaxed mb-4">
+                                Cuatro piezas, más una quinta si toman la vía propia.
+                            </p>
+
+                            <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                                <strong class="text-primary">a. La biblioteca.</strong> Todas las fuentes de su estado
+                                del arte en un gestor de referencias, cada una resoluble por DOI o URL, con el PDF
+                                adjunto donde exista.
+                            </p>
+
+                            <p class="text-sm text-gray-700 leading-relaxed mb-2">
+                                <strong class="text-primary">b. La carpeta, con procedencia.</strong> Convención de
+                                nombres declarada, y un README que responda por cada archivo:
+                            </p>
+                            <div class="plantilla">README DE PROCEDENCIA
+
+Archivo:
+Origen: (URL, DOI, o "entregado por [persona] el [fecha]")
+Fecha de obtención:
+Licencia o permiso:
+Quién lo verificó:</div>
+
+                            <p class="text-sm text-gray-700 leading-relaxed mb-2 mt-4">
+                                <strong class="text-primary">c. La tabla de trazabilidad.</strong> Una fila por cada
+                                afirmación sustantiva de su estado del arte:
+                            </p>
+                            <div class="plantilla">TABLA DE TRAZABILIDAD
+
+Afirmación: (cita textual de su propio anteproyecto)
+Fuente: (clave del gestor)
+Ubicación: (página, o cita textual de la fuente)
+Verificado por: (nombre de quien abrió el documento)
+Fecha:</div>
+                            <p class="text-sm text-gray-700 leading-relaxed mt-3 mb-4">
+                                Aquí es donde varios equipos van a descubrir que una afirmación de su anteproyecto no
+                                tiene de dónde salir. <strong>Corríjanla y déjenlo dicho en la memoria.</strong>
+                                Encontrarlo ustedes vale; que lo encuentre el equipo auditor, menos; que lo encuentre
+                                yo en la sustentación, nada.
+                            </p>
+
+                            <p class="text-sm text-gray-700 leading-relaxed mb-2">
+                                <strong class="text-primary">d. El protocolo de prompts, versionado.</strong>
+                            </p>
+                            <div class="plantilla">PROTOCOLO DE CONSULTA — v[n]
+
+Rol:
+Fuentes permitidas:
+Formato de cita exigido: (documento + página)
+Qué responde cuando no está en las fuentes:
+Qué cambió respecto a la versión anterior, y por qué:</div>
+                            <p class="text-sm text-gray-700 leading-relaxed mt-3 mb-4">
+                                Guarden la <span class="inline-code">v1</span>. Se la voy a pedir.
+                            </p>
+
+                            <p class="text-sm text-gray-700 leading-relaxed mb-2">
+                                <strong class="text-primary">e. El acta de datos de la contraparte.</strong>
+                                Obligatoria si su corpus incluye documentos que no son públicos. Se firma
+                                <strong>antes</strong> de mover el primer archivo, no después.
+                            </p>
+                            <div class="plantilla">ACTA DE DATOS DE LA CONTRAPARTE
+
+Qué documentos: (cuáles, cuántos, de qué tipo)
+Quién autoriza: (nombre, cargo, fecha)
+¿Anonimizados?: sí / no / no aplica — y qué se removió
+Dónde se almacenan: (equipo, carpeta, servicio)
+Qué herramientas los procesan: (y si suben contenido a la nube)
+Quién puede verlos:
+Qué pasa con ellos al terminar el semestre:</div>
+                            <p class="text-sm text-gray-700 leading-relaxed mt-3 mb-4">
+                                Si su contraparte no puede autorizar por escrito, trabajen con documentos públicos.
+                                No es una formalidad: es la diferencia entre un corpus y una filtración.
+                            </p>
+
+                            <p class="text-sm text-gray-700 leading-relaxed mb-0 bg-[#F5F0FA] rounded-lg px-4 py-3">
+                                <strong class="text-primary">f. (Opcional) El repositorio del sistema propio.</strong>
+                                Si toman la vía propia: código, README ejecutable, dependencias fijadas, ninguna clave
+                                dentro del código, y los documentos de la contraparte <strong>fuera</strong> del
+                                repositorio.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lp-card p-5 border-l-4" style="border-color:#0E7490">
+                    <div class="flex items-start gap-4">
+                        <span class="lp-gradient text-white font-bold rounded-xl w-9 h-9 flex items-center justify-center flex-shrink-0">4</span>
+                        <div class="flex-1">
+                            <p class="font-bold text-navy mb-1">Evaluación de fidelidad <span class="text-xs font-normal text-gray-500">· semana 3</span></p>
+
+                            <p class="text-sm text-gray-700 leading-relaxed mb-2 mt-3">
+                                <strong class="text-teal">a. El banco.</strong> De 15 a 20 preguntas sobre su corpus,
+                                con respuesta conocida y localizada:
+                            </p>
+                            <div class="plantilla">BANCO DE EVALUACIÓN
+
+Pregunta:
+Respuesta conocida:
+Dónde está: (documento, página)
+Tratamiento:
+Respuesta obtenida:
+¿Sostenida por un fragmento real?: sí / no</div>
+                            <p class="text-sm text-gray-700 leading-relaxed mt-3 mb-4">
+                                Incluyan <strong>al menos tres preguntas cuya respuesta no esté en el corpus</strong>.
+                                Sirven para medir lo contrario: si el sistema se abstiene o si inventa. Un sistema que
+                                nunca dice «no está en las fuentes» no es confiable; es complaciente.
+                            </p>
+
+                            <p class="text-sm text-gray-700 leading-relaxed mb-2">
+                                <strong class="text-teal">b. El caso de fallo.</strong> Obligatorio, como en el
+                                agente. Un caso donde su sistema respondió mal, <strong>con la causa</strong>:
+                                fragmentación que partió una tabla, PDF escaneado sin OCR, recuperación que trajo el
+                                fragmento equivocado, o modelo que ignoró el contexto y respondió de memoria.
+                            </p>
+                            <p class="text-sm text-gray-600 leading-relaxed mb-4 bg-[#F0FDF4] rounded-lg px-3 py-2" style="border-left:3px solid #15803D">
+                                <i class="fas fa-lightbulb text-[#15803D] mr-1"></i>
+                                Mostrar solo casos exitosos baja la nota.
+                            </p>
+
+                            <p class="text-sm text-gray-700 leading-relaxed mb-2">
+                                <strong class="text-teal">c. El acta de auditoría cruzada.</strong> En la semana 3 les
+                                asigno un equipo. Ustedes verifican sus referencias; ellos las suyas.
+                            </p>
+                            <div class="plantilla">ACTA DE AUDITORÍA CRUZADA
+
+Equipo auditor:
+Equipo auditado:
+Referencias revisadas: (n)
+No abren:
+Existen pero no dicen lo que se les atribuye:
+Qué corrigió el equipo auditado:</div>
+                            <p class="text-sm text-gray-700 leading-relaxed mt-3 mb-0">
+                                Los pares los asigno yo. El acta la firman los dos equipos.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lp-card p-5 border-l-4" style="border-color:#0E7490">
+                    <div class="flex items-start gap-4">
+                        <span class="lp-gradient text-white font-bold rounded-xl w-9 h-9 flex items-center justify-center flex-shrink-0">5</span>
+                        <div class="flex-1">
+                            <p class="font-bold text-navy mb-1">Memoria <span class="text-xs font-normal text-gray-500">· 2 a 4 páginas · semana 3</span></p>
+                            <p class="text-sm text-gray-700 leading-relaxed mb-2">
+                                Corta a propósito. Seis apartados:
+                            </p>
+                            <ol class="text-sm text-gray-700 prosa mb-0">
+                                <li><strong>Diagnóstico</strong> — qué les inventó la IA y qué les costó.</li>
+                                <li><strong>Experimento y decisión</strong> — el conteo y la herramienta elegida
+                                    contra las descartadas.</li>
+                                <li><strong>El sistema</strong> — cómo quedó montado y por qué así. Si tomaron la vía
+                                    propia: modelo de embeddings, tamaño de fragmento y número de fragmentos
+                                    recuperados, cada uno contra su alternativa.</li>
+                                <li><strong>Evaluación</strong> — la medición por tratamiento, el caso de fallo con su
+                                    causa, lo que encontró la auditoría.</li>
+                                <li><strong>Qué corrigieron de su propio anteproyecto</strong> — con nombre y
+                                    apellido: qué afirmación no tenía de dónde salir.</li>
+                                <li><strong>Declaración de uso de IA</strong> — ver la sección correspondiente.</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== SUSTENTACIÓN ===================== -->
+        <section id="sustentacion" class="ancla mb-12 salto">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-microphone text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">La sustentación</h2>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-5 max-w-3xl">
+                Solo ante el docente. Es el <strong>25 % de la nota</strong> y la única parte que se califica
+                <strong>individualmente</strong>.
+            </p>
+
+            <div class="lp-card p-6 mb-5">
+                <p class="text-sm text-gray-700 leading-relaxed mb-4">
+                    <strong class="text-navy">Diez minutos de exposición para todos los equipos, más cinco minutos de
+                        preguntas por integrante.</strong>
+                </p>
+
+                <div class="tabla-scroll mb-4">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy w-44">Equipo</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Exposición</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Preguntas</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">1 integrante</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">10 min</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">5 min</td>
+                                <td class="p-2 border border-gray-200 font-bold text-secondary">15 min</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">2 integrantes</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">10 min</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">10 min</td>
+                                <td class="p-2 border border-gray-200 font-bold text-secondary">20 min</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">3 integrantes</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">10 min</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">15 min</td>
+                                <td class="p-2 border border-gray-200 font-bold text-secondary">25 min</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                    La exposición no crece con el equipo: diez minutos alcanzan para contar un sistema, y repartirlos
+                    entre tres obliga a un guion más apretado, que es parte del ejercicio. Las preguntas sí crecen,
+                    porque <strong>cada integrante recibe sus propios cinco minutos</strong> y de ahí sale su nota
+                    individual.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-5 mb-5">
+                <div class="lp-card overflow-hidden">
+                    <div class="px-5 py-3" style="background:linear-gradient(135deg,#3D008D 0%,#0E7490 100%)">
+                        <div class="text-white font-bold text-base">Los diez minutos de exposición</div>
+                    </div>
+                    <div class="p-5 text-sm">
+                        <div class="tabla-scroll">
+                            <table class="w-full border-collapse" style="min-width:0">
+                                <tbody>
+                                    <tr><td class="p-2 border-b border-gray-100 mono text-xs text-secondary font-bold align-top w-14">0–2′</td>
+                                        <td class="p-2 border-b border-gray-100 text-gray-700"><strong class="text-navy">El diagnóstico.</strong> Qué les inventó la IA y qué costó.</td></tr>
+                                    <tr><td class="p-2 border-b border-gray-100 mono text-xs text-secondary font-bold align-top">2–5′</td>
+                                        <td class="p-2 border-b border-gray-100 text-gray-700"><strong class="text-navy">El experimento y la decisión.</strong> Con el conteo en pantalla.</td></tr>
+                                    <tr><td class="p-2 border-b border-gray-100 mono text-xs text-secondary font-bold align-top">5–8′</td>
+                                        <td class="p-2 border-b border-gray-100 text-gray-700"><strong class="text-navy">El sistema, funcionando.</strong> Una consulta con su cita.</td></tr>
+                                    <tr><td class="p-2 mono text-xs text-secondary font-bold align-top">8–10′</td>
+                                        <td class="p-2 text-gray-700"><strong class="text-navy">Los límites.</strong> Dónde falla y qué no le delegarían.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lp-card overflow-hidden ring-2 ring-secondary/20">
+                    <div class="px-5 py-3" style="background:linear-gradient(135deg,#ED1E79 0%,#FF2D8A 100%)">
+                        <div class="text-white font-bold text-base">Los cinco minutos de cada integrante</div>
+                        <div class="text-white/80 text-xs">Un turno por persona.</div>
+                    </div>
+                    <div class="p-5 text-sm">
+                        <p class="text-gray-700 leading-relaxed mb-3">
+                            Aquí se decide la nota individual, y por eso el tiempo es de cada quien y no del equipo.
+                            Mientras le pregunto a una persona, <strong class="text-navy">el resto no habla ni toca el
+                                teclado</strong>. Cada turno tiene la misma forma:
+                        </p>
+                        <div class="tabla-scroll">
+                            <table class="w-full border-collapse" style="min-width:0">
+                                <tbody>
+                                    <tr><td class="p-2 border-b border-gray-100 mono text-xs text-secondary font-bold align-top w-14">0–2′</td>
+                                        <td class="p-2 border-b border-gray-100 text-gray-700"><strong class="text-navy">De dónde sale esto.</strong> Señalo una frase de su anteproyecto. Usted abre la tabla, el documento y la página.</td></tr>
+                                    <tr class="bg-[#FDF2F8]"><td class="p-2 border-b border-gray-100 mono text-xs text-secondary font-bold align-top">2–4′</td>
+                                        <td class="p-2 border-b border-gray-100 text-gray-700"><strong class="text-navy">Pregunta nueva.</strong> Le hago a su sistema una pregunta que yo elijo, no de su banco. Usted explica el resultado —incluso si es malo.</td></tr>
+                                    <tr><td class="p-2 mono text-xs text-secondary font-bold align-top">4–5′</td>
+                                        <td class="p-2 text-gray-700"><strong class="text-navy">Honestidad.</strong> Qué no entiende todavía del sistema que montaron.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-gray-700 leading-relaxed mt-3 mb-0 pt-3 border-t border-gray-100">
+                            En equipos de dos o tres añado, dentro de esos mismos minutos, una <strong class="text-navy">decisión
+                                cruzada</strong>: le pregunto por algo que expuso otra persona. A quien trabaja solo le
+                            pregunto por lo que pasó más rápido en su exposición, que cumple la misma función.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-xl px-5 py-4 border-l-4 bg-[#ECFEFF] mb-5" style="border-color:#0E7490">
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                    <strong class="text-teal">La pregunta nueva no es una trampa.</strong> Puede salir mal, y que salga
+                    mal no baja la nota por sí solo: lo que se califica es si ustedes saben <em>por qué</em> salió mal.
+                    Un equipo que dice «el fragmento que recuperó no contiene esa tabla, porque la partimos en la
+                    indexación» demuestra más que uno al que le funcionó de casualidad.
+                </p>
+            </div>
+
+            <div class="rounded-xl px-5 py-4 border-l-4 bg-[#FFFBEB] mb-5" style="border-color:#B45309">
+                <span class="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-wider font-bold rounded mb-2 px-2 py-0.5 text-white" style="background:#B45309">
+                    <i class="fas fa-clock"></i> Si el sistema no arranca en 60 segundos
+                </span>
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                    <strong>Si el sistema no arranca en 60 segundos</strong>, cancelamos esa ronda y lo anoto. No les
+                    descuenta en la sustentación sino en implementación: un sistema que no levanta es un problema de
+                    construcción, no de defensa.
+                </p>
+            </div>
+
+            <div class="rounded-xl px-5 py-4 border-l-4 bg-[#F5F0FA]" style="border-color:#3D008D">
+                <span class="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-wider font-bold rounded mb-2 px-2 py-0.5 text-white" style="background:#3D008D">
+                    <i class="fas fa-people-group"></i> Sobre el reparto del trabajo
+                </span>
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-3">
+                    <strong>Si son dos o tres:</strong> a cada quien le voy a preguntar por lo que expuso otro, y la
+                    demostración en vivo se la pido <strong>a quien menos haya intervenido</strong>. Repártanse el
+                    trabajo como quieran; todos tienen que poder operar el sistema. Un equipo de tres tiene más manos
+                    y también más sitios donde esconderse: los cinco minutos individuales existen justamente para que
+                    eso no pase.
+                </p>
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                    <strong>Si trabaja solo:</strong> no tiene el problema del reparto, pero tiene el contrario. Nadie
+                    le va a discutir una decisión ni va a encontrar el error que usted no vio, así que el equipo
+                    auditor de la semana 3 y la doble clasificación del experimento pesan más en su caso. Úselos.
+                </p>
+            </div>
+        </section>
+
+        <!-- ===================== NOTA ===================== -->
+        <section id="nota" class="ancla mb-12 salto">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-scale-balanced text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Cómo se califica</h2>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-5 max-w-3xl">
+                Cinco criterios. Los cuatro primeros dan nota de equipo; el quinto se califica por separado a cada
+                integrante.
+            </p>
+
+            <div class="lp-card p-6 mb-5">
+                <div class="tabla-scroll">
+                    <table class="w-full text-sm border-collapse">
+                        <thead>
+                            <tr>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">Criterio</th>
+                                <th class="text-center p-2 border border-gray-200 bg-[#F5F0FA] text-navy w-20">Peso</th>
+                                <th class="text-left p-2 border border-gray-200 bg-[#F5F0FA] text-navy">La pregunta que responde</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">C1 · Diagnóstico y experimento</td>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-primary">15 %</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Saben dónde y cuánto les inventa la IA?</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">C2 · Sistema de fuentes y trazabilidad</td>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-primary">25 %</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Se puede rastrear todo lo que entra al proyecto?</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">C3 · Implementación del sistema</td>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-teal">20 %</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Está construido, corre y responde con cita?</td>
+                            </tr>
+                            <tr class="bg-[#FCFCFE]">
+                                <td class="p-2 border border-gray-200 font-semibold text-navy">C4 · Evaluación de fidelidad y valor</td>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-teal">15 %</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Midieron cuánto inventa y saben dónde falla?</td>
+                            </tr>
+                            <tr>
+                                <td class="p-2 border border-gray-200 font-semibold text-secondary">C5 · Sustentación y comunicación</td>
+                                <td class="p-2 border border-gray-200 text-center font-bold text-secondary">25 %</td>
+                                <td class="p-2 border border-gray-200 text-gray-600">¿Pueden mostrar en vivo de dónde sale cada cosa? <strong class="text-secondary">Individual.</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-xs text-gray-500 mt-3 leading-relaxed mb-0">
+                    Cinco niveles: Ejemplar (5,0), Competente (4,0), En desarrollo (3,0), Insuficiente (2,0), No
+                    pertinente (1,0 o menos).
+                </p>
+            </div>
+
+            <div class="rounded-xl px-5 py-4 border-l-4 bg-[#FFFBEB] mb-5" style="border-color:#B45309">
+                <span class="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-wider font-bold rounded mb-2 px-2 py-0.5 text-white" style="background:#B45309">
+                    <i class="fas fa-shield-halved"></i> Techo por sustentación
+                </span>
+                <div class="rounded-lg p-3 text-center bg-white border border-[#B45309]/25 mb-3">
+                    <p class="mono text-sm text-navy mb-0">Nota individual = <strong>mín</strong> ( nota ponderada , nota de C5 + 1,0 )</p>
+                </div>
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                    El mismo de la actividad anterior. Si sustentan bien, el techo nunca los toca.
+                </p>
+            </div>
+
+            <div class="lp-card p-6 mb-5">
+                <h3 class="text-secondary font-semibold text-base mb-2">
+                    <i class="fas fa-gavel mr-2"></i>Cuatro reglas que topan la nota
+                </h3>
+                <p class="text-sm text-gray-700 leading-relaxed mb-4">
+                    Existen porque son exactamente las fallas que esta actividad busca eliminar. Ninguna es sorpresa:
+                    están aquí desde el primer día.
+                </p>
+
+                <div class="space-y-3">
+                    <div class="flex items-start gap-4 rounded-xl px-4 py-3 bg-[#FEF2F2] border-l-4" style="border-color:#B91C1C">
+                        <span class="text-white font-bold rounded-lg w-7 h-7 flex items-center justify-center flex-shrink-0 text-sm" style="background:#B91C1C">1</span>
+                        <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                            <strong class="text-navy">Una referencia inexistente en su tabla de trazabilidad —o que no
+                                dice lo que la tabla afirma— deja C2 en Insuficiente.</strong> Aplica igual si la
+                            sugirió una IA. La responsabilidad de abrir el documento es de ustedes, y esta actividad
+                            trata precisamente de eso.
+                        </p>
+                    </div>
+                    <div class="flex items-start gap-4 rounded-xl px-4 py-3 bg-[#FEF2F2] border-l-4" style="border-color:#B91C1C">
+                        <span class="text-white font-bold rounded-lg w-7 h-7 flex items-center justify-center flex-shrink-0 text-sm" style="background:#B91C1C">2</span>
+                        <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                            <strong class="text-navy">Documentos de la contraparte subidos en claro a un servicio en la
+                                nube, sin acuerdo escrito, dejan C2 en Insuficiente.</strong> Con datos personales,
+                            además va por la vía reglamentaria.
+                        </p>
+                    </div>
+                    <div class="flex items-start gap-4 rounded-xl px-4 py-3 bg-[#FFFBEB] border-l-4" style="border-color:#B45309">
+                        <span class="text-white font-bold rounded-lg w-7 h-7 flex items-center justify-center flex-shrink-0 text-sm" style="background:#B45309">3</span>
+                        <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                            <strong class="text-navy">Sin banco de preguntas con respuesta conocida, C4 no supera En
+                                desarrollo.</strong> Sin respuesta conocida no hay medición, y sin medición no hay
+                            evaluación.
+                        </p>
+                    </div>
+                    <div class="flex items-start gap-4 rounded-xl px-4 py-3 bg-[#FFFBEB] border-l-4" style="border-color:#B45309">
+                        <span class="text-white font-bold rounded-lg w-7 h-7 flex items-center justify-center flex-shrink-0 text-sm" style="background:#B45309">4</span>
+                        <p class="text-sm text-gray-700 leading-relaxed mb-0">
+                            <strong class="text-navy">El Ejemplar de C3 exige la vía propia, construida y
+                                evaluada.</strong> Con la vía empaquetada o gestionada, bien hecha, C3 llega hasta
+                            Competente. Eso topa la nota global en <strong class="text-navy">4,8</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-xl px-5 py-4 border-l-4 bg-[#F5F0FA]" style="border-color:#3D008D">
+                <span class="inline-flex items-center gap-2 text-[0.7rem] uppercase tracking-wider font-bold rounded mb-2 px-2 py-0.5 text-white" style="background:#3D008D">
+                    <i class="fas fa-comments"></i> Sobre la regla 4, que es la que más van a discutir
+                </span>
+                <p class="text-gray-700 leading-relaxed text-[0.95rem] mb-0">
+                    <strong>Sobre la regla 4, que es la que más van a discutir.</strong> No es que la vía propia sea
+                    mejor: para muchos proyectos es peor: más frágil y más lenta de montar. Es que el 5,0 de un
+                    criterio que se llama «implementación» tiene que exigir que hayan implementado algo, y decidir
+                    tamaño de fragmento, modelo de embeddings y número de fragmentos recuperados —y defender cada
+                    decisión con una medición— es lo que distingue construir un sistema de configurarlo. <strong>Un 4,8
+                        con la vía empaquetada, bien medida y bien defendida, es una nota excelente y el resultado que
+                        espero de la mayoría.</strong> Tomen la vía propia si el proyecto la necesita —privacidad,
+                    reproducibilidad, volumen—, no por la décima.
+                </p>
+            </div>
+        </section>
+
+        <!-- ===================== USO DE IA ===================== -->
+        <section id="ia" class="ancla mb-12">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-wand-magic-sparkles text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Uso de IA: declararlo, no esconderlo</h2>
+            </div>
+
+            <div class="lp-card p-6 mb-5 prosa text-[0.97rem] text-gray-700">
+                <p class="mb-0">
+                    Lo mismo que en la actividad del agente, y aquí con más razón: la IA es la herramienta y el objeto
+                    de estudio al mismo tiempo. Úsenla para lo que quieran. <strong>Declárenla.</strong>
+                </p>
+            </div>
+
+            <div class="lp-card p-6">
+                <p class="text-xs uppercase tracking-wider font-bold text-gray-400 mb-2">Plantilla · último apartado de la memoria</p>
+                <div class="plantilla">DECLARACIÓN DE USO DE IA
+
+Herramientas usadas: (cuáles, y en qué versión si aplica)
+Para qué las usamos:
+  - Gestión de fuentes: (la herramienta elegida, y para qué exactamente)
+  - Código del sistema: (si aplica)
+  - Redacción de la memoria:
+  - Otros:
+Herramienta de gestión elegida: (cuál, y contra cuáles la comparamos)
+Alternativas descartadas y por qué:
+Qué NO usamos IA para:
+Qué tuvimos que corregir de lo que generó:
+  (aquí es donde se nota que entendieron lo que recibieron)</div>
+                <p class="text-sm text-gray-600 mt-3 mb-0">
+                    <i class="fas fa-lightbulb text-gold mr-1"></i>
+                    El último renglón sigue siendo el que más suma. Y esta vez tienen algo que la actividad anterior
+                    no les daba: <strong class="text-navy">el conteo del experimento</strong>. Una declaración que dice
+                    «de quince referencias del tratamiento A, siete no existían» vale más que cualquier promesa de
+                    haber revisado con cuidado.
+                </p>
+            </div>
+        </section>
+
+        <!-- ===================== PREGUNTAS ===================== -->
+        <section id="preguntas" class="ancla mb-12">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-circle-question text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Las preguntas que les voy a hacer</h2>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-5 max-w-3xl">
+                Se las doy por adelantado, igual que la vez pasada. Ninguna se responde memorizando.
+            </p>
+
+            <div class="grid md:grid-cols-2 gap-5">
+                <div class="lp-card p-5 border-l-4" style="border-color:#3D008D">
+                    <p class="text-xs uppercase tracking-wider font-bold text-primary mb-3">Sobre el diagnóstico</p>
+                    <ul class="text-sm text-gray-700 prosa mb-0">
+                        <li>¿Cuál fue el fallo que más les costó, y cómo se dieron cuenta?</li>
+                        <li>¿Cómo clasificaron una referencia que existía pero decía otra cosa?</li>
+                        <li>¿En cuántas no coincidió la clasificación, y por qué creen que pasó?</li>
+                        <li>¿Qué les dice ese intervalo, con ese tamaño de muestra?</li>
+                    </ul>
+                </div>
+
+                <div class="lp-card p-5 border-l-4" style="border-color:#3D008D">
+                    <p class="text-xs uppercase tracking-wider font-bold text-primary mb-3">Sobre el sistema</p>
+                    <ul class="text-sm text-gray-700 prosa mb-0">
+                        <li>Muéstrenme de dónde sale esta frase de su anteproyecto.</li>
+                        <li>¿Qué responde su sistema si le pregunto algo que no está en las fuentes? Muéstremelo.</li>
+                        <li>¿Dónde están los documentos de su contraparte y quién puede verlos?</li>
+                        <li>¿Qué herramienta descartaron y en qué criterio perdió?</li>
+                    </ul>
+                </div>
+
+                <div class="lp-card p-5 border-l-4" style="border-color:#0E7490">
+                    <p class="text-xs uppercase tracking-wider font-bold text-teal mb-3">Sobre la implementación</p>
+                    <ul class="text-sm text-gray-700 prosa mb-0">
+                        <li>¿Por qué ese modelo de embeddings y no el de una API? <em class="text-gray-400">(vía propia)</em></li>
+                        <li>¿Qué tamaño de fragmento eligieron y contra qué lo compararon? <em class="text-gray-400">(vía propia)</em></li>
+                        <li>Si bajo a un solo fragmento recuperado, ¿qué se rompe?</li>
+                        <li>¿Cómo se reconstruye el índice desde cero? Muéstrenme el comando.</li>
+                    </ul>
+                </div>
+
+                <div class="lp-card p-5 border-l-4" style="border-color:#0E7490">
+                    <p class="text-xs uppercase tracking-wider font-bold text-teal mb-3">Sobre la evaluación</p>
+                    <ul class="text-sm text-gray-700 prosa mb-0">
+                        <li>Denme el caso donde inventó, y díganme por qué ahí.</li>
+                        <li>¿Qué encontró el equipo auditor que ustedes no habían visto?</li>
+                        <li>¿Qué afirmación de su propio anteproyecto tuvieron que corregir?</li>
+                        <li>¿Cuánto mejoró respecto al control, y confían en esa diferencia?</li>
+                    </ul>
+                </div>
+
+                <div class="lp-card p-5 border-l-4 md:col-span-2" style="border-color:#ED1E79">
+                    <p class="text-xs uppercase tracking-wider font-bold text-secondary mb-3">Sobre ustedes — las que deciden la nota individual</p>
+                    <div class="grid md:grid-cols-2 gap-x-8">
+                        <ul class="text-sm text-gray-700 prosa mb-0">
+                            <li><strong>¿Qué parte del sistema no entienden todavía del todo?</strong></li>
+                            <li>Reindexe el corpus usted, sin ayuda de nadie. Hágalo ahora.</li>
+                        </ul>
+                        <ul class="text-sm text-gray-700 prosa mb-0">
+                            <li>¿Qué le corrigieron a la IA esta vez?</li>
+                            <li>¿En qué se equivocaron al montar esto, y cómo se dieron cuenta?</li>
+                        </ul>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-100 leading-relaxed mb-0">
+                        La primera del último bloque parece una trampa y no lo es. Reconocer con precisión dónde
+                        termina lo que entienden sigue siendo señal de que entendieron el resto.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===================== LISTA FINAL ===================== -->
+        <section id="lista" class="ancla mb-10 salto">
+            <div class="flex items-center gap-3 mb-5 border-b border-gray-200 pb-3">
+                <div class="lp-gradient p-2.5 rounded-xl shadow-md text-white w-11 h-11 flex items-center justify-center">
+                    <i class="fas fa-list-check text-lg"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Antes de entregar</h2>
+            </div>
+
+            <div class="lp-card p-6">
+                <div class="flex items-center justify-between flex-wrap gap-3 mb-4 pb-4 border-b border-gray-200">
+                    <p class="text-sm text-gray-600" id="aviso-lista">Repásenla la noche anterior.</p>
+                    <div class="flex items-center gap-3">
+                        <span id="contador-lista" class="text-xs font-bold text-gray-500">0/21 listos</span>
+                        <button id="btn-limpiar" class="no-print text-xs px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-navy font-semibold">
+                            <i class="fas fa-rotate-left mr-1"></i>Limpiar
+                        </button>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-2 gap-x-6" id="lista-final"></div>
+            </div>
+        </section>
+
+        <footer class="mt-16 pt-8 border-t border-gray-200">
+            <div class="lp-header rounded-xl p-6 text-center">
+                <p class="text-white font-medium text-sm">
+                    <strong>Nada sin fuente</strong> · Gestión de información e IA en su proyecto
+                </p>
+                <p class="text-xs mt-1 text-white/80 italic">
+                    Una respuesta que no se puede rastrear no es una respuesta. Es una coincidencia con buena
+                    redacción.
+                </p>
+                <p class="text-xs mt-2 text-white/70">
+                    Universidad Santo Tomás · Consultoría · Pregrado en Estadística
+                </p>
+                <p class="text-xs text-white/70">
+                    Docente: Javier Mauricio Sierra
+                </p>
+                <p class="text-[10px] mt-2 text-white/50">
+                    Este enunciado se entrega junto con la rúbrica de evaluación. Léanla antes de empezar.
+                </p>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        /* ============================================================
+           LISTA DE VERIFICACIÓN FINAL
+           El estado se guarda en el navegador del estudiante. Es una
+           ayuda personal, no una entrega: nada de esto llega al docente.
+        ============================================================ */
+        const ITEMS = [
+            'Un inventario de fallos por integrante, con al menos tres fallos cada uno',
+            'Tabla de conteos del experimento: una consulta por integrante, en los tres tratamientos',
+            'Proporciones con intervalo, y el desacuerdo de la clasificación reportado (entre integrantes, o entre las dos pasadas si trabaja solo)',
+            'Tabla de decisión con los seis criterios y las alternativas descartadas',
+            'Todas las fuentes en el gestor, cada una resoluble por DOI o URL',
+            'README de procedencia, con una fila por archivo del corpus',
+            'Tabla de trazabilidad completa, con página o cita textual en cada fila',
+            'Protocolo de prompts versionado, con la v1 guardada',
+            'Acta de datos de la contraparte firmada, si el corpus no es público',
+            'Ruta de abstención probada: el sistema dice «no está en las fuentes» cuando corresponde',
+            'Banco de 15 a 20 preguntas con respuesta conocida y localizada',
+            'Al menos tres preguntas cuya respuesta NO está en el corpus',
+            'Caso de fallo documentado, con su causa',
+            'Acta de auditoría cruzada, firmada por los dos equipos',
+            'Afirmaciones corregidas del anteproyecto, declaradas en la memoria',
+            'Memoria de 2 a 4 páginas con los seis apartados',
+            'Declaración de uso de IA, con alternativas descartadas',
+            'Ninguna clave de API dentro del código <em class="text-gray-400">(vía propia)</em>',
+            'Documentos de la contraparte fuera del repositorio <em class="text-gray-400">(vía propia)</em>',
+            'El sistema arranca en menos de 60 segundos desde cero',
+            'Cada integrante puede operarlo sin los demás',
+        ];
+
+        const CLAVE = 'enunciado_fuentes_ia_lista';
+        const cont = document.getElementById('lista-final');
+
+        /* Abierto con doble clic (file://) o incrustado, el navegador bloquea
+           el almacenamiento. La lista sigue funcionando dentro de la sesión;
+           lo que no puede hacer es prometer que se guarda, así que el aviso se
+           ajusta a lo que de verdad va a pasar. */
+        const almacen = (() => {
+            try {
+                localStorage.setItem('__t', '1');
+                localStorage.removeItem('__t');
+                return localStorage;
+            } catch (e) {
+                return null;
+            }
+        })();
+
+        document.getElementById('aviso-lista').textContent = almacen
+            ? 'Repásenla la noche anterior. Lo que marquen se guarda en este navegador.'
+            : 'Repásenla la noche anterior. Aquí las marcas se pierden al recargar; para conservarlas, impriman la lista.';
+
+        let guardado = {};
+        if (almacen) {
+            try { guardado = JSON.parse(almacen.getItem(CLAVE) || '{}'); } catch (e) { guardado = {}; }
+        }
+
+        ITEMS.forEach((texto, i) => {
+            const fila = document.createElement('label');
+            fila.className = 'item-check';
+            fila.innerHTML = '<input type="checkbox" data-i="' + i + '"' + (guardado[i] ? ' checked' : '') +
+                '><span class="text-sm text-gray-700 leading-relaxed">' + texto + '</span>';
+            cont.appendChild(fila);
+        });
+
+        /* El contador de progreso. Verde solo cuando no falta nada: la lista
+           existe para mirarla la noche anterior, y un número a medias tiene
+           que verse a medias. */
+        const contador = document.getElementById('contador-lista');
+
+        function actualizarContador() {
+            const cajas = cont.querySelectorAll('input[type="checkbox"]');
+            let n = 0;
+            cajas.forEach(c => { if (c.checked) n++; });
+            contador.textContent = n + '/' + cajas.length + ' listos';
+            contador.className = 'text-xs font-bold ' +
+                (n === cajas.length ? 'text-emerald-700' : 'text-gray-500');
+        }
+
+        /* Un solo manejador en el contenedor: los items son fijos y no hace
+           falta un listener por casilla. */
+        cont.addEventListener('change', e => {
+            if (e.target.type !== 'checkbox') return;
+            guardado[e.target.dataset.i] = e.target.checked;
+            if (almacen) almacen.setItem(CLAVE, JSON.stringify(guardado));
+            actualizarContador();
+        });
+
+        document.getElementById('btn-limpiar').addEventListener('click', () => {
+            guardado = {};
+            cont.querySelectorAll('input').forEach(c => { c.checked = false; });
+            if (almacen) almacen.removeItem(CLAVE);
+            actualizarContador();
+        });
+
+        actualizarContador();
+    </script>
+</body>
+
+</html>
