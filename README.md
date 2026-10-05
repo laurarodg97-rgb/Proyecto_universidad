@@ -1,6 +1,6 @@
 # Nada sin fuente
 
-Proyecto evaluativo de la electiva **Python e inteligencia artificial para desarrollo de APIs**, Universidad Santo Tomás. El equipo estudia los efectos de cobrar matrícula por crédito frente a una tarifa plana sobre los créditos matriculados y los resultados financieros institucionales.
+Proyecto evaluativo de la materia **Consultoria e Investigación**, Universidad Santo Tomás. El equipo estudia los efectos de cobrar matrícula por crédito frente a una tarifa plana sobre los créditos matriculados y los resultados financieros institucionales.
 
 **Equipo:** Juan Roa, Gabriel Aldana y Laura Rodríguez  
 **Docente:** Javier Mauricio Sierra
