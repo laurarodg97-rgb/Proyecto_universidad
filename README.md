@@ -11,7 +11,7 @@ Las carpetas corresponden a los cinco entregables del enunciado:
 
 | Carpeta | Producto | Archivo principal |
 |---|---|---|
-| `Entregable 1/` | Inventarios individuales de fallos | Tres documentos, uno por integrante; faltan las firmas personales |
+| `Entregable 1/` | Inventarios individuales de fallos | Tres documentos, uno por integrante |
 | `Entregable 2/` | Experimento y decisión (Semana 1) | Excel del experimento y `SEMANA 1.docx` con visto bueno recibido |
 | `Entregable 3/` | Corpus, protocolo y trazabilidad | Procedencia, trazabilidad, protocolo v1/v2, pruebas y scripts de apoyo |
 | `Entregable 4/` | Banco y evaluación de fidelidad | `Banco_y_evaluacion_fidelidad_v4.xlsx` y transcripción de respuestas |
