@@ -1,0 +1,29 @@
+# Python y entornos locales
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Configuración y secretos
+.env
+.env.*
+!.env.example
+secrets.*
+*.pem
+*.key
+
+# Documentos fuente cuyo permiso de redistribución no está verificado
+Entregable 3/corpus/incluido/*.pdf
+
+# Archivos de trabajo, respaldos y salidas de inspección
+**/.builder/
+**/*.inspect.ndjson
+.archivo_local/
+salida_fuentes_archivada/
+*.tmp
+*.log
+
+# Office y sistema operativo
+~$*
+.DS_Store
+Thumbs.db
