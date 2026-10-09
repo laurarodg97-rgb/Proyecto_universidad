@@ -1,0 +1,1546 @@
+% ============================================================================
+% Informe — Metodología de anonimización
+% Oferta académica USTA 2021-1 a 2026-1 · Consultoría USTA 2026-II
+% Universidad Santo Tomás — Documento consolidado: 1 de octubre de 2026
+% ----------------------------------------------------------------------------
+% Fuente del contenido: anonimizacion/METODOLOGIA_ANONIMIZACION.md
+% (si cambia el Markdown, actualizar este archivo).
+% A pedido del consultor (2026-10-01), esta versión OMITE las referencias a
+% iCloud y al registro de la sesión de IA que sí están en el Markdown. Por eso
+% su numeración es propia: P1-P5 (decisiones) y R1-R6 (hallazgos) no coinciden
+% con P1-P6 y R1-R8 del Markdown. Al transcribir cambios, mantener la omisión.
+% Formato tomado del Informe SAVIALAB (dos columnas, portada y anexos a una).
+%
+% Compilar dos veces (la segunda resuelve índice, referencias y la portada):
+%     pdflatex Informe_Anonimizacion_USTA.tex
+%     pdflatex Informe_Anonimizacion_USTA.tex
+%
+% No contiene datos personales: solo conteos y un ejemplo ficticio.
+% Vive fuera de anonimizacion/ a propósito: 06_auditoria_final.py barre en
+% bruto todo lo que hay ahí, y la tabla interna de un PDF tiene números de
+% 10 dígitos que la auditoría tomaría por documentos de identidad.
+% ============================================================================
+\documentclass[11pt,a4paper,twoside,twocolumn]{article}
+
+% --- Paquetes base ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla,es-noshorthands,es-nodecimaldot]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,top=2.3cm,bottom=2.3cm,inner=2.0cm,outer=2.0cm,columnsep=0.7cm]{geometry}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{xltabular}
+\usepackage{colortbl}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\setlength{\headheight}{14pt}
+\usepackage{titlesec}
+\usepackage[titles]{tocloft}
+\setlength{\cftbeforesecskip}{3pt}
+\setlength{\cftbeforesubsecskip}{0pt}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fontawesome5}
+\usepackage{tikz}
+\usetikzlibrary{positioning,fit,arrows.meta,calc,backgrounds}
+\usepackage[most]{tcolorbox}
+\usepackage[hyphens]{url}
+\usepackage{hyperref}
+
+% --- Colores institucionales USTA ---
+% Azul y dorado: los mismos de la plantilla USTA del proyecto
+% (documentacion_repos_ustadistica/informes/_base/Informe_repo_base.tex).
+% Rojo: el del escudo; aquí solo marca riesgos altos.
+\definecolor{ustaAzul}{HTML}{003876}
+\definecolor{ustaAzulOscuro}{HTML}{021952}
+\definecolor{ustaDorado}{HTML}{FDB913}
+\definecolor{ustaRojo}{HTML}{A6272E}
+\definecolor{grisTexto}{HTML}{555555}
+\colorlet{ustaDoradoTexto}{ustaDorado!70!black}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=ustaAzul,
+    citecolor=ustaAzul,
+    urlcolor=ustaAzul,
+    pdftitle={Metodolog\'ia de anonimizaci\'on - Oferta acad\'emica USTA 2021-1 a 2026-1},
+    pdfauthor={Javier Mauricio Sierra - Consultor\'ia USTA 2026-II},
+    pdfsubject={Anonimizaci\'on de OFERTA\_ACADEMICA\_20211\_20261.xlsx}
+}
+
+% --- Rutas y nombres de archivo en monoespaciada, cortables en / _ . - ---
+\urlstyle{tt}
+\makeatletter
+\g@addto@macro{\UrlBreaks}{\do\_\do\-\do\.}
+\makeatother
+\newcommand{\cod}[1]{\nolinkurl{#1}}
+
+% --- Encabezados y pies doble cara ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\small\textit{Metodología de anonimización --- Oferta académica USTA}}
+\fancyhead[RO]{\small\textit{\leftmark}}
+\fancyfoot[LE,RO]{\textcolor{ustaAzul}{\thepage}}
+\fancyfoot[RE,LO]{\small\textcolor{ustaAzul}{Universidad Santo Tomás} \textcolor{ustaDoradoTexto}{$\cdot$} \textcolor{grisTexto}{Consultoría 2026-II}}
+\renewcommand{\headrulewidth}{0.6pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\headrule}{{\color{ustaDorado}\hrule width\headwidth height\headrulewidth\vskip-\headrulewidth}}
+\renewcommand{\footrule}{{\color{ustaAzul}\vskip-\footruleskip\vskip-\footrulewidth\hrule width\headwidth height\footrulewidth\vskip\footruleskip}}
+
+% --- Espaciado y títulos ---
+\setlength{\parskip}{0.5\baselineskip}
+\setlength{\parindent}{0pt}
+\emergencystretch=3em
+\hyphenpenalty=200
+\tolerance=1000
+\raggedbottom
+\titleformat{\section}{\normalfont\large\bfseries\raggedright\color{ustaAzul}}{\thesection.}{0.5em}{}[{\color{ustaDorado}\titlerule[0.8pt]}]
+\titleformat{\subsection}{\normalfont\normalsize\bfseries\raggedright\color{ustaAzulOscuro}}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalfont\small\bfseries\raggedright\color{ustaAzulOscuro}}{\thesubsubsection.}{0.5em}{}
+\titlespacing*{\subsubsection}{0pt}{1.2ex plus .5ex}{0.4ex}
+
+% Pasos del proceso: rótulo azul + título
+\newcommand{\paso}[2]{\subsubsection*{\colorbox{ustaAzul}{\textcolor{white}{\scriptsize\sffamily\bfseries PASO #1}}\enspace #2}}
+
+% --- Flotantes a dos columnas ---
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\dbltopfraction}{0.72}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.8}
+\renewcommand{\dblfloatpagefraction}{0.6}
+\setcounter{topnumber}{3}
+\setcounter{dbltopnumber}{3}
+\setcounter{totalnumber}{5}
+
+% --- Tablas ---
+\captionsetup{font=small,labelfont={bf,color=ustaAzul},labelsep=period}
+\arrayrulecolor{ustaAzul}
+\renewcommand{\arraystretch}{1.18}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{Q}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcommand{\cab}[1]{\textcolor{ustaAzul}{\textbf{#1}}}
+
+% --- Marcas de nivel de riesgo (sustituyen los emojis del Markdown) ---
+\newcommand{\punto}[1]{\tikz[baseline=-0.55ex]\fill[#1] (0,0) circle (0.55ex);}
+\newcommand{\alto}{\punto{ustaRojo}}
+\newcommand{\medio}{\punto{ustaDorado}}
+\newcommand{\nose}{\textcolor{ustaRojo}{\faBan}\,\textbf{No}}
+
+% --- Cajas ---
+\tcbset{
+  cajabase/.style={enhanced,boxrule=0pt,arc=0pt,outer arc=0pt,
+    left=6pt,right=6pt,top=4pt,bottom=4pt,before skip=6pt,after skip=8pt,
+    fontupper=\small}
+}
+\newtcolorbox{nota}{cajabase,colback=ustaAzul!5,colframe=ustaAzul,leftrule=2.5pt}
+\newtcolorbox{alerta}{cajabase,colback=ustaRojo!5,colframe=ustaRojo,leftrule=2.5pt}
+\newtcolorbox{dorada}{cajabase,colback=ustaDorado!12,colframe=ustaDorado,leftrule=2.5pt}
+
+% --- Código ---
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=true,
+  breakatwhitespace=true,
+  showstringspaces=false,
+  upquote=true,
+  commentstyle=\color{grisTexto}\itshape,
+  morecomment=[l]{\#},
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+           {Í}{{\'I}}1 {ñ}{{\~n}}1
+}
+\newtcblisting{codigo}[1][]{enhanced,boxrule=0pt,arc=0pt,outer arc=0pt,
+  colback=ustaAzul!4,colframe=ustaAzul,leftrule=2.5pt,boxsep=0pt,left=4pt,right=2pt,top=3pt,bottom=3pt,
+  listing only,listing options={basicstyle=\ttfamily\scriptsize,columns=fullflexible,keepspaces=true,breaklines=true,#1}}
+
+% ============================================================================
+\begin{document}
+% ============================================================================
+
+% --- Portada a página completa ---
+\onecolumn
+\begin{titlepage}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[ustaAzulOscuro] (current page.north west) rectangle ([yshift=-3.1cm]current page.north east);
+  \fill[ustaDorado] ([yshift=-3.1cm]current page.north west) rectangle ([yshift=-3.28cm]current page.north east);
+  \node[text=white,font=\LARGE\bfseries] at ([yshift=-1.3cm]current page.north) {UNIVERSIDAD SANTO TOMÁS};
+  \node[text=ustaDorado,font=\normalsize] at ([yshift=-2.15cm]current page.north)
+       {Facultad de Estadística \enspace$\cdot$\enspace Asignatura Consultoría \enspace$\cdot$\enspace 2026-II};
+  \fill[ustaAzulOscuro] (current page.south west) rectangle ([yshift=1.0cm]current page.south east);
+  \fill[ustaDorado] ([yshift=1.0cm]current page.south west) rectangle ([yshift=1.12cm]current page.south east);
+  \node[text=white,font=\footnotesize] at ([yshift=0.5cm]current page.south) {Documento de uso interno \enspace$\cdot$\enspace no contiene datos personales};
+\end{tikzpicture}
+\centering
+\vspace*{2.6cm}
+
+{\large\color{ustaAzul} Proyecto de consultoría USTA 2026-II}\\[0.9cm]
+
+{\color{ustaDorado}\rule{\textwidth}{1.2pt}}\\[0.35cm]
+{\LARGE\bfseries\color{ustaAzulOscuro} Metodología de anonimización}\\[0.2cm]
+{\LARGE\bfseries\color{ustaAzulOscuro} Oferta académica USTA 2021-1 a 2026-1}\\[0.35cm]
+{\large\itshape Qué se hizo, por qué, cómo se comprobó\\ y qué no garantiza}\\[0.3cm]
+{\color{ustaDorado}\rule{\textwidth}{1.2pt}}\\[1.0cm]
+
+{\large\bfseries\color{ustaAzul} Responsable}\\[0.15cm]
+{\Large Javier Mauricio Sierra}\\[0.8cm]
+
+{\large\bfseries\color{ustaAzul} Fechas}\\[0.15cm]
+{Ejecución: 2 y 3 de septiembre de 2026 \quad$\cdot$\quad Documento consolidado: 1 de octubre de 2026}\\[0.9cm]
+
+\begin{tabular}{rl}
+\textbf{Archivo de origen:} & \cod{OFERTA_ACADEMICA_20211_20261.xlsx} \\
+\textbf{SHA-256 del original:} & \texttt{f447e0d2\ldots a9d9} (sin cambios) \\
+\textbf{Propósito:} & Simular el cobro del pregrado por créditos \\
+\textbf{Universo del estudio:} & 60 programas de pregrado $\cdot$ 18.563 estudiantes \\
+\textbf{Entregables:} & \cod{matriculas_anon} (78.625 $\times$ 20, principal) \\
+                     & \cod{inscripciones_anon} (448.489 $\times$ 14, detalle) \\
+\textbf{Método:} & HMAC-SHA256 con llave efímera destruida; supresión, \\
+                 & generalización, barajado y medición del riesgo \\
+\textbf{Estado:} & Ejecutado; cinco decisiones pendientes (P1--P5) \\
+\end{tabular}
+
+\vfill
+{\footnotesize Este documento es la puerta de entrada a la anonimización del archivo de oferta
+académica entregado por la Universidad Santo Tomás. Los detalles están en la bitácora
+(\cod{EVIDENCIA.md}), el informe de riesgo (\cod{RIESGO_REIDENTIFICACION.md}), el diccionario de
+datos (\cod{entrega/DICCIONARIO_DATOS.md}) y los scripts (\cod{anonimizacion/scripts/}). Todas las
+cifras se recalcularon desde los datos el 1 de octubre de 2026; las que no salen de otro script
+las reproduce \cod{08_revision_documental.py}.}\\[1.4cm]
+\end{titlepage}
+
+% --- Índice y guía de lectura a una columna ---
+\begingroup
+\setlength{\parskip}{0pt}
+\linespread{0.94}\selectfont
+\tableofcontents
+\endgroup
+
+\newpage
+
+% --- Resto del documento a dos columnas ---
+\twocolumn
+
+\begin{nota}
+{\normalsize\bfseries\color{ustaAzul} Cómo leer este documento}\par\smallskip
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabularx}{\linewidth}{@{}L P{2.3cm} r@{}}
+\toprule
+\cab{Si usted es\ldots} & \cab{Lea} & \cab{Tiempo} \\
+\midrule
+Directivo/a o responsable de protección de datos de la USTA & §\ref{sec:resumen}, §\ref{sec:riesgo}, §\ref{sec:limites} y §\ref{sec:custodia} & 10 min \\
+Analista que va a usar los datos & §\ref{sec:resumen}, §\ref{sec:columnas}, §\ref{sec:riesgo} y el diccionario & 15 min \\
+Auditor/a técnico/a & Todo; después la bitácora y los scripts & 1 h \\
+Quien retome el proyecto & §\ref{sec:custodia}, §\ref{sec:verificar} y Anexo~\ref{app:mapa} & 15 min \\
+\bottomrule
+\end{tabularx}
+\par\smallskip
+Los términos técnicos están en el glosario (Anexo~\ref{app:glosario}).
+\end{nota}
+
+% ============================================================================
+\section{Resumen ejecutivo}\label{sec:resumen}
+% ============================================================================
+
+\textbf{Para qué.} El estudio quiere estimar qué habría pasado si la USTA hubiera cobrado el
+pregrado \textbf{por créditos} en lugar de con su esquema actual de \textbf{media matrícula y
+matrícula completa}. Para eso hacen falta, por cada estudiante y semestre, los créditos
+inscritos y el valor efectivamente pagado. No hace falta saber quién es nadie.
+
+\textbf{Qué se recibió.} Un Excel de 656.737 filas ---una por cada materia que inscribió cada
+estudiante--- y 52 columnas, con 11 periodos (2021-1 a 2026-1) y datos de 41.589 personas:
+nombres, cédulas, correos, celulares, notas, estado académico y valor pagado.
+
+\textbf{Qué se entrega.} Dos tablas anonimizadas de los \textbf{18.563 estudiantes de los 60
+programas de pregrado} (Tabla~\ref{tab:entregables}).
+
+\begin{table}[!ht]
+\centering
+\caption{Entregables de la anonimización (CSV comprimido, \texttt{.csv.gz}).}
+\label{tab:entregables}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\columnwidth}{@{}P{3.3cm} L Q{1.45cm}@{}}
+\toprule
+\cab{Tabla y uso} & \cab{Una fila por\ldots} & \cab{Filas $\times$ col.} \\
+\midrule
+\cod{matriculas_anon}\newline \textbf{Principal.} Basta para la simulación & estudiante $\times$ programa $\times$ periodo & 78.625 $\times$ 20 \\
+\cod{inscripciones_anon}\newline Detalle. Solo con justificación & materia inscrita & 448.489 $\times$ 14 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Cómo, en cinco ideas.}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=0pt]
+  \item \textbf{Minimizar según el propósito.} Lo que no sirve para costear no sale: se eliminaron
+  31 de las 52 columnas ---los 6 identificadores, las 19 de notas, el grupo, la sede y 4 que se
+  sustituyeron por versiones recodificadas--- y todo lo que no es pregrado.
+  \item \textbf{Seudónimos con llave destruida.} La cédula y el código de estudiante se
+  reemplazaron por códigos (\texttt{E…}, \texttt{M…}) calculados con HMAC-SHA256 y una llave aleatoria
+  de 256 bits que solo existió en la memoria del proceso y se destruyó al terminar. A partir del
+  entregable, nadie ---ni siquiera quien hizo el proceso--- puede convertir un código en una cédula.
+  \item \textbf{Generalizar lo que singulariza.} Valor pagado redondeado al millar, ingresos
+  anteriores a 2015 agrupados, reintegros topados, subsidio y sanción disciplinaria reducidos a
+  categorías.
+  \item \textbf{Barajar las filas}, para que la posición no delate el orden del archivo original.
+  \item \textbf{Medir el riesgo que queda} en lugar de suponerlo, y documentarlo.
+\end{enumerate}
+
+\textbf{Qué está comprobado.} El original nunca se modificó (mismo SHA-256 al inicio, al final y
+hoy). La extracción es fiel (1.300 de 1.300 celdas). Los entregables no contienen el nombre de
+ninguno de los 18.563 estudiantes, ni correos, cédulas o celulares. El dinero y los créditos
+cuadran contra el original: en cada uno de los 497 grupos de programa y periodo, los valores
+entregados son exactamente los originales redondeados al millar (error $\leq$ \$500 por
+matrícula), y los 1.158.935 créditos son idénticos.
+
+\begin{alerta}
+\textbf{\color{ustaRojo}\faExclamationTriangle\ Qué no está garantizado} (detalle en
+§\ref{sec:riesgo} y §\ref{sec:limites}).
+\begin{itemize}[leftmargin=*,itemsep=2pt,topsep=2pt]
+  \item \textbf{Riesgo residual.} En el 2,91\,\% de las matrículas, la combinación de periodo,
+  programa y nivel la comparten menos de 5 matrículas (contando la propia), y el 71\,\% de los
+  estudiantes tiene un conjunto de materias único. Es el precio de conservar el detalle que el
+  estudio necesita.
+  \item \textbf{Frente a quien tenga el archivo fuente, no es anónimo.} La USTA, o este equipo
+  mientras conserve el original, puede volver a ligar los registros con las personas.
+\end{itemize}
+\end{alerta}
+
+\textbf{Decisiones pendientes} (§\ref{sec:pendientes}). Del consultor: rebarajar los entregables
+antes de que salgan del equipo y destruir los intermedios en claro. De la USTA: autorizar el
+tratamiento, aceptar por escrito el riesgo residual y decidir el destino del original.
+
+% ============================================================================
+\section{Contexto y marco}\label{sec:contexto}
+% ============================================================================
+
+\subsection{El propósito manda}
+
+La regla que organizó todo el trabajo: \textbf{cada columna tiene que justificarse por el
+análisis tarifario, o sale.} Es la medida de privacidad más fuerte disponible, porque lo que no
+se entrega no se puede filtrar, y además no cuesta nada al análisis (Tabla~\ref{tab:necesita}).
+
+\begin{table}[!ht]
+\centering
+\caption{Qué necesita la simulación y qué no.}
+\label{tab:necesita}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}L L@{}}
+\toprule
+\cab{La simulación necesita} & \cab{No necesita} \\
+\midrule
+Créditos inscritos por matrícula & Nombre, cédula, correos, celular \\
+Valor pagado por matrícula & Notas, promedios, fallas \\
+Programa, facultad, periodo, nivel & Grupo de clase \\
+Estado académico, reintegro, subsidio (como controles) & Sede (es una sola) \\
+Seguir al mismo estudiante entre semestres & Saber quién es ese estudiante \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La última fila es la tensión central: el estudio necesita reconocer que dos matrículas son de la
+misma persona, sin saber de quién. Eso es lo que resuelve la seudonimización
+(§\ref{sec:proceso}, paso~4).
+
+\subsection{Anonimizar y seudonimizar no son lo mismo}\label{sec:anon-seud}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt,topsep=0pt]
+  \item \textbf{Seudonimizar} es reemplazar los identificadores por códigos. Si alguien puede
+  reconstruir el vínculo ---con una llave, una tabla de correspondencias o el archivo original---
+  el dato sigue siendo personal.
+  \item \textbf{Anonimizar} es que nadie pueda reconstruirlo con medios razonables.
+\end{itemize}
+
+Este proceso destruyó la llave: quien solo recibe los entregables no tiene forma de convertir un
+código en una cédula. Lo que sí conserva es la posibilidad de \textbf{reconocer} a alguien por
+sus atributos ---programa, semestre, materias, valor pagado--- si ya sabe cosas de esa persona;
+ese riesgo se mide en la §\ref{sec:riesgo}. Quien conserva el archivo fuente, en cambio, puede
+volver a ligar los registros (§\ref{sec:fuente}): para él el resultado es
+\textbf{seudonimizado}. Ninguno de los dos casos es un anonimato sin matices, y la distinción
+importa para la calificación jurídica del entregable.
+
+\subsection{Marco normativo de referencia}
+
+Esta sección orienta; \textbf{no sustituye un concepto jurídico} de la USTA.
+
+\begin{itemize}[leftmargin=*,itemsep=2pt,topsep=0pt]
+  \item \textbf{Ley 1581 de 2012} y su reglamentación (Decreto 1377 de 2013, compilado en el
+  Decreto 1074 de 2015). Define dato personal como información vinculada o que pueda asociarse
+  a personas determinadas o \emph{determinables}. Un dato que ya no puede asociarse a nadie deja
+  de serlo.
+  \item \textbf{Roles.} La USTA es responsable del tratamiento; el consultor actúa como
+  encargado.
+  \item \textbf{Principios aplicados} (art.~4): \emph{finalidad} (solo lo necesario para el
+  estudio), \emph{acceso y circulación restringida} (los intermedios no circulan),
+  \emph{seguridad} y \emph{confidencialidad}.
+  \item \textbf{Mientras existan los intermedios en claro hay tratamiento de datos personales},
+  con la finalidad acotada a este ejercicio.
+  \item \textbf{Pendiente desde el inicio:} confirmar que la USTA autorizó tratar este archivo con
+  fines de consultoría (§\ref{sec:pendientes}, P3).
+\end{itemize}
+
+% ============================================================================
+\section{El archivo de origen}\label{sec:origen}
+% ============================================================================
+
+\subsection{Estructura}
+
+La Tabla~\ref{tab:estructura} resume la forma del archivo recibido.
+
+\begin{table}[!ht]
+\centering
+\caption{Estructura del archivo de origen.}
+\label{tab:estructura}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}P{2.25cm} L@{}}
+\toprule
+\cab{Atributo} & \cab{Valor} \\
+\midrule
+Archivo & \cod{OFERTA_ACADEMICA_20211_20261.xlsx}, 142.819.604 bytes \\
+Hojas & 1 (\texttt{Exportar Hoja de Trabajo}) \\
+Filas de datos & 656.737 --- una por materia inscrita por un estudiante en un periodo \\
+Columnas & 52 (\cod{A}\ldots\cod{AZ}) \\
+Periodos & 11, de \cod{20211} a \cod{20261} \\
+Personas & 41.592 cédulas distintas tal como vienen; \textbf{41.589} tras normalizar (§\ref{sec:proceso}, paso~4) \\
+Nombres distintos & 41.571: hay homónimos, por eso hay menos nombres que personas \\
+Códigos de estudiante & 54.637; 9.438 personas tienen más de uno (cursan o cursaron varios programas) \\
+Programas & 576, de pregrado, posgrado y educación continuada \\
+Tamaño real & 1,18 GB de XML descomprimido en una sola hoja; 266.647 cadenas compartidas \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Qué contiene, por nivel de riesgo}
+
+No todas las columnas pesan igual. La Tabla~\ref{tab:niveles} las agrupa por el daño que harían si se filtraran.
+
+\begin{table}[!ht]
+\centering
+\caption{Columnas del original por nivel de riesgo.}
+\label{tab:niveles}
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\columnwidth}{@{}P{1.9cm} L P{2.2cm}@{}}
+\toprule
+\cab{Tipo} & \cab{Columnas} & \cab{Riesgo} \\
+\midrule
+Identifi\-cadores directos & nombres, cédula, correo institucional, correo personal, celular, código & \alto\ Identifican por sí solos \\
+Datos de alto impacto & 19 de notas, promedios y fallas; estado (incluye sanción disciplinaria); Ser Pilo Paga & \alto\ Dañinos si se filtran \\
+Cuasi-identi\-ficadores & programa, periodo, nivel, periodo de ingreso, grupo, valor pagado, facultad & \medio\ Identifican combinados \\
+Carga analítica & créditos, materias, pensum, valor pagado & Necesarios para el estudio \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Hallazgos sobre el archivo que condicionaron el diseño}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=0pt]
+  \item \textbf{No se puede editar en sitio.} 1,18 GB de XML en una hoja agota la memoria de las
+  herramientas habituales. Y aunque se pudiera, borrar celdas de un Excel \textbf{no borra los
+  textos}: quedan en \cod{xl/sharedStrings.xml} como residuo recuperable. Por eso el flujo es
+  \emph{extraer $\to$ anonimizar $\to$ escribir un archivo nuevo}, nunca \emph{editar}.
+  \item \textbf{Metadatos con origen.} \cod{xl/workbook.xml} guarda la ruta de la cuenta de
+  Registro y Control desde la que se exportó. No pasa a los CSV, que no llevan metadatos de
+  Office.
+  \item \textbf{La persona es la cédula, no el código.} Quien cambia o suma programas recibe otro
+  código; seudonimizar por código partiría la historia de 9.438 personas.
+  \item \textbf{Cédulas duplicadas por ceros a la izquierda.} Tres personas aparecían dos veces
+  (con y sin ceros iniciales). De ahí las 41.592 «personas» que en realidad son 41.589.
+  \item \textbf{Una columna mal rotulada.} La columna \cod{20221} no es un periodo ni está vacía:
+  tiene 283.443 calificaciones.
+  \item \textbf{\cod{VAL_PAGADO} se repite en cada materia} del mismo estudiante y periodo: es el
+  valor de la matrícula del semestre, no de la materia.
+  \item \textbf{\cod{PAGO} es constante en la práctica} («Con Pago» en el 99,999\,\%), así que no
+  distingue media matrícula de matrícula completa; eso hay que derivarlo de \cod{VAL_PAGADO}.
+  \item \textbf{La sede es una sola} (\cod{CAU} constante) y \textbf{\cod{PER_INGRESO} solo está
+  informado en el 38,8\,\% de las filas} del archivo completo.
+\end{enumerate}
+
+% ============================================================================
+\section{Principios y decisiones de diseño}\label{sec:decisiones}
+% ============================================================================
+
+La Tabla~\ref{tab:decisiones} recoge cada decisión con sus alternativas y quién la tomó.
+«Consultor» indica una decisión explícita del responsable del proyecto; «técnica», una decisión
+de ejecución de quien implementó, dentro del plan aprobado o como desviación documentada en la
+§\ref{sec:desviaciones}.
+
+\begin{table*}[tp]
+\centering
+\caption{Las doce decisiones de diseño.}
+\label{tab:decisiones}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}r P{3.9cm} P{3.4cm} L P{2.3cm}@{}}
+\toprule
+\cab{\#} & \cab{Decisión} & \cab{Alternativas descartadas} & \cab{Por qué} & \cab{Quién} \\
+\midrule
+1 & \textbf{El original no se toca}: solo lectura (\cod{444}), checksum registrado, todo sobre una copia & Trabajar sobre el original & Es la prueba de que los entregables vienen de él & Consultor \\
+2 & Extraer $\to$ anonimizar $\to$ \textbf{escribir archivos nuevos} & Borrar columnas en el Excel & El residuo en \cod{sharedStrings.xml} y los metadatos & Técnica \\
+3 & \textbf{Seudonimización irreversible}: llave destruida & Llave guardada en bóveda (reversible); hash simple; numeración consecutiva & Sin llave nadie puede revertirla; un hash simple se rompe en horas (§\ref{sec:proceso}, paso~4) & Consultor \\
+4 & \textbf{La llave de sujeto es la cédula normalizada} & El código de estudiante & El código partiría la trayectoria de 9.438 personas & Técnica \\
+5 & \textbf{Solo pregrado}: 60 programas & Todo el archivo & Es el alcance del estudio, y de paso elimina cientos de programas con 1 a 5 personas & Consultor, con 9 decisiones caso a caso \\
+6 & \textbf{Programas pequeños con su nombre real} & Colapsarlos en \texttt{OTRO PREGRADO} & Conservar la desagregación por programa; riesgo aceptado a sabiendas por el consultor & Consultor \\
+7 & \textbf{Suprimir las notas} (19 columnas) & Conservarlas & Irrelevantes para costear y de alto impacto & Técnica \\
+8 & \textbf{Dos tablas}, la agregada como principal & Una sola tabla de detalle & El detalle por materia concentra el riesgo de trayectoria & Técnica \\
+9 & \textbf{CSV comprimido}, \cod{;}, UTF-8 con BOM & Parquet o Excel & Lo pidió el consultor; abre directo en Excel en español & Consultor \\
+10 & \textbf{Barajar con semilla fija} & No barajar; semilla secreta & Reproducibilidad. \emph{En retrospectiva fue un error}: la semilla publicada permite deshacer el barajado a quien tenga el fuente (§\ref{sec:fuente}) & Técnica \\
+11 & \textbf{Redondear el valor al millar} & Bandas de valor & Error $\leq$ \$500 en matrículas de millones; no afecta el costeo & Técnica \\
+12 & \textbf{Seudonimizar, filtrar y escribir en un solo proceso} & Un script por tarea, como decía el plan & Con llave efímera, cada ejecución da códigos distintos & Técnica \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+% ============================================================================
+\section{El proceso, paso a paso}\label{sec:proceso}
+% ============================================================================
+
+\begin{figure*}[tp]
+\centering
+\begin{tikzpicture}[
+  font=\scriptsize,
+  >={Stealth[length=2.2mm]},
+  caja/.style={rectangle, rounded corners=2pt, align=center, inner sep=3pt, minimum height=1.0cm, text width=#1},
+  claro/.style={caja=#1, draw=ustaRojo, fill=ustaRojo!7},
+  anon/.style={caja=#1, draw=ustaAzul, very thick, fill=ustaAzul!9},
+  util/.style={caja=#1, draw=ustaDoradoTexto, fill=ustaDorado!14},
+  tarea/.style={rectangle, rounded corners=2pt, align=center, inner sep=3pt, text width=3.3cm, fill=white},
+  etapa/.style={font=\footnotesize\bfseries, text=white, fill=ustaAzul, rounded corners=2pt, align=center, inner sep=3pt, minimum height=0.95cm, text width=#1},
+  flujo/.style={->, thick, draw=ustaAzulOscuro},
+  verif/.style={->, dashed, thick, draw=ustaAzul!70}
+]
+% Etapas (columnas en x = 0; 4,15; 8,55; 13,3)
+\node[etapa=3.0cm] at (0,0)     {1 $\cdot$ Congelar\\ y copiar};
+\node[etapa=3.3cm] at (4.15,0)  {2 $\cdot$ Extraer y\\ fijar el universo};
+\node[etapa=3.6cm] at (8.55,0)  {3 $\cdot$ Anonimizar\\ en un solo proceso};
+\node[etapa=3.8cm] at (13.3,0)  {4 $\cdot$ Verificar\\ y documentar};
+
+% Etapa 1
+\node[claro=3.0cm] (orig) at (0,-1.6) {\textbf{Original}\\ solo lectura (444)\\ \cod{OFERTA_ACADEMICA_20211_20261.xlsx}\\ SHA-256 registrado};
+\node[claro=3.0cm] (copia) at (0,-3.9) {\textbf{Copia de trabajo}\\ \cod{trabajo/OFERTA_COPIA.xlsx}\\ idéntica: mismo checksum};
+\draw[flujo] (orig) -- node[right,font=\scriptsize\ttfamily]{cp} (copia);
+
+% Etapa 2
+\node[util=3.3cm] (v01b) at (4.15,-1.6) {\cod{01b_verificar.py}\\ compara con el \textbf{original}:\\ 1.300 de 1.300 celdas iguales};
+\node[claro=3.3cm] (raw) at (4.15,-3.9) {\textbf{Extracción en texto crudo}\\ \cod{_INSEGURO/oferta_raw.parquet}\\ \texttt{01\_extraer.py}, en streaming\\ 656.737 filas $\cdot$ 19,7 MB};
+\node[util=3.3cm] (filtro) at (4.15,-6.35) {\cod{02_catalogo_programas.py}\\ \cod{02c_filtro_validado.py}\\ 576 programas $\to$ \textbf{60} de pregrado (Checkpoint A)};
+\draw[flujo] (copia) -- (raw);
+\draw[verif] (orig) -- (v01b);
+\draw[verif] (raw) -- (v01b);
+\draw[flujo] (raw) -- (filtro);
+
+% Etapa 3
+\node[font=\scriptsize\ttfamily\bfseries, text=ustaAzul] (t0) at (8.55,-0.95) {03\_anonimizar.py};
+\node[tarea] (t4) at (8.55,-2.0) {\textbf{T4 $\cdot$ Seudonimizar}\\ HMAC-SHA256; llave de 256 bits solo en memoria, \textcolor{ustaRojo}{\textbf{destruida}} al terminar};
+\node[tarea] (t5) at (8.55,-3.9) {\textbf{T5 $\cdot$ Filtrar, suprimir y generalizar}\\ salen 31 de 52 columnas};
+\node[tarea] (t6) at (8.55,-5.65) {\textbf{T6 $\cdot$ Agregar, barajar y escribir}\\ CSV con \texttt{;}, \mbox{UTF-8} con BOM, gzip};
+\draw[->, draw=ustaAzul!70] (t4) -- (t5);
+\draw[->, draw=ustaAzul!70] (t5) -- (t6);
+\begin{scope}[on background layer]
+  \node[draw=ustaAzul, very thick, fill=ustaAzul!7, rounded corners=3pt, inner sep=5pt, fit=(t0)(t4)(t5)(t6)] (proc) {};
+\end{scope}
+\coordinate (yfiltro) at (0,-4.6);
+\draw[flujo] (raw.east) -- (raw.east -| proc.west);
+\draw[flujo] (filtro.east) -| (6.25,-4.6) -- (proc.west |- yfiltro);
+
+% Etapa 4
+\node[anon=3.8cm] (mat) at (13.3,-1.45) {\cod{matriculas_anon.csv.gz}\\ 78.625 $\times$ 20 $\cdot$ \textbf{principal}};
+\node[anon=3.8cm] (ins) at (13.3,-2.85) {\cod{inscripciones_anon.csv.gz}\\ 448.489 $\times$ 14 $\cdot$ detalle};
+\draw[flujo] (proc.east |- mat) -- (mat);
+\draw[flujo] (proc.east |- ins) -- (ins);
+\node[util=3.8cm, align=left] (chk) at (13.3,-5.35) {%
+  \renewcommand{\arraystretch}{1.05}%
+  \begin{tabular}{@{}>{\ttfamily}l@{\;}l@{}}
+  03b    & Checkpoint B: 23/23 \\
+  04     & informe de riesgo \\
+  05     & diccionario, checksums \\
+  06     & auditoría final \\
+  07     & prefijos \texttt{E…} y \texttt{M…} \\
+  05/06  & versión final \\
+  08     & revisión 2026-10-01 \\
+  \end{tabular}};
+\draw[verif] (ins) -- (chk);
+
+% Leyenda
+\node[anchor=west] (l1) at (-1.6,-7.75) {\fcolorbox{ustaRojo}{ustaRojo!7}{\rule{0pt}{4pt}\hspace{9pt}}\ datos personales en claro};
+\node[anchor=west] (l2) at ([xshift=2.5mm]l1.east) {\fcolorbox{ustaAzul}{ustaAzul!9}{\rule{0pt}{4pt}\hspace{9pt}}\ entregable anonimizado};
+\node[anchor=west] (l3) at ([xshift=2.5mm]l2.east) {\fcolorbox{ustaDoradoTexto}{ustaDorado!14}{\rule{0pt}{4pt}\hspace{9pt}}\ verificación};
+\draw[flujo] ([xshift=2.5mm]l3.east) -- ++(0.6,0) node[right] (l4) {flujo de datos};
+\draw[verif] ([xshift=2.5mm]l4.east) -- ++(0.6,0) node[right] {comprobación};
+\end{tikzpicture}
+\caption{Flujo de la anonimización. El original solo se lee; todo el trabajo se hace sobre una
+copia. La llave HMAC existe únicamente dentro de \texttt{03\_anonimizar.py}, que seudonimiza,
+filtra y escribe en un solo proceso.}
+\label{fig:flujo}
+\end{figure*}
+
+Cada paso tiene un objetivo, una acción y una comprobación que lo cierra; un paso no se daba por
+terminado sin su comprobación (Figura~\ref{fig:flujo}). Entre paréntesis va la tarea
+correspondiente del plan (\cod{PLAN_ANONIMIZACION.md}). Los \emph{checkpoints} A, B y C eran
+puntos de control en los que el consultor revisaba los resultados y aprobaba antes de seguir.
+
+\paso{0}{Perfilado (solo lectura)}
+
+\textbf{Objetivo:} dimensionar el archivo antes de decidir nada. Se leyó el original en modo de
+solo lectura, sin escribir nada. Produjo las cifras de la §\ref{sec:origen} y descubrió las
+restricciones técnicas.
+
+\paso{1}{Congelar el original y copiarlo (Tarea 1)}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt,topsep=0pt]
+  \item SHA-256 del original registrado:\\
+  {\scriptsize\texttt{f447e0d24e716b09a9abea1655dec6a0\\c2e143bd418fd93115e826c5a0eaa9d9}}.
+  \item Permisos cambiados de \cod{644} a \cod{444}. Es la \textbf{única} acción aplicada al
+  original: cambia un atributo del sistema de archivos, no el contenido, y el checksum posterior
+  lo demuestra.
+  \item Copia bit a bit en \cod{trabajo/OFERTA_COPIA.xlsx}, con checksum idéntico.
+\end{itemize}
+
+\textbf{Comprobación:} el mismo SHA-256 en el original al inicio, tras la extracción, en la
+auditoría final y en la revisión del 2026-10-01.
+
+\paso{2}{Extraer a un formato manejable (Tarea 3)}
+
+\cod{01_extraer.py} lee la copia ---nunca el original--- en \emph{streaming}: recorre el XML fila
+a fila y libera la memoria de cada una, escribiendo bloques de 50.000 filas a Parquet.
+54 segundos; resultado de 19,7 MB.
+
+Los valores se guardan \textbf{como texto, exactamente como están en el XML}. El plan pedía darles
+tipo aquí, pero convertir a número antes de comparar habría hecho inexacta la verificación (un
+\cod{4.4000000000000004} dejaría de coincidir consigo mismo). El tipado se hizo después.
+
+\textbf{Comprobación} (\cod{01b_verificar.py}): 25 filas elegidas al azar (semilla 20260903) se
+compararon celda a celda \textbf{contra el original}, no contra la copia; así la muestra pone a
+prueba la cadena completa, original $\to$ copia $\to$ extracción. Resultado: \textbf{1.300 de
+1.300 celdas idénticas}. Además, 656.737 filas y los conteos de no nulos de 14 columnas clave
+coinciden con el perfilado. Que la copia es idéntica al original lo garantiza, aparte, su
+checksum.
+
+\paso{3}{Definir el universo del estudio (Tarea 2 y Checkpoint A)}
+
+¿Qué es pregrado? El archivo no lo dice. \cod{02_catalogo_programas.py} clasificó los 576
+programas con reglas explícitas y marcó lo dudoso para revisión humana en vez de adivinar:
+
+\begin{itemize}[leftmargin=*,itemsep=1pt,topsep=0pt]
+  \item \textbf{Posgrado:} el nombre dice especialización, maestría o doctorado.
+  \item \textbf{Educación continuada:} diplomado, curso, taller, congreso, seminario y similares.
+  \item \textbf{Movilidad:} intercambio, homologación, visitante.
+  \item \textbf{Pregrado:} ninguna de las anteriores y algún estudiante llegó a 8.º semestre o más.
+  \item \textbf{Pregrado nuevo:} la regla anterior excluía los programas recién creados, donde
+  nadie ha llegado aún a 8.º. Se añadió una segunda señal, medida sobre las matrículas del
+  programa: mediana de 12 o más créditos, mediana de valor pagado superior a \$500.000 y
+  facultad asignada.
+\end{itemize}
+
+Quedaron \textbf{113 programas marcados como dudosos}; por defecto quedaban fuera. El consultor
+revisó la propuesta y tomó \textbf{9 decisiones} que quedaron escritas, con su motivo, en
+\cod{02c_filtro_validado.py}: confirmó dos pregrados nuevos que la regla había detectado pero
+eran dudosos, incluyó los dos intercambios de pregrado (los únicos dudosos que entraron), excluyó
+un «programa» de una sola persona y cuatro figuras de posgrado o visitantes. Aparte de esas 9,
+decidió \textbf{no colapsar los programas pequeños}.
+
+\begin{table}[!ht]
+\centering
+\caption{Universo final del estudio.}
+\label{tab:universo}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}L P{3.7cm}@{}}
+\toprule
+\cab{Universo final} & \cab{Valor} \\
+\midrule
+Programas & \textbf{60} de 576: 50 por la regla de pregrado, 8 pregrados nuevos, 2 intercambios \\
+Filas & 448.489 (68,3\,\% del archivo) \\
+Estudiantes & 18.563 \\
+Matrículas (estudiante $\times$ programa $\times$ periodo) & 78.625 \\
+Filas con matrícula simbólica ($\leq$ \$1.000) & 3.231 (0,72\,\%), que son 1.131 matrículas; se conservan marcadas \\
+Programas con menos de 10 estudiantes & 14, con 66 personas; 2 tienen un solo estudiante \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Un programa entró por la regla automática con \textbf{todas} sus matrículas simbólicas: «Sígueme
+Tomasino -- Pregrado» (38 estudiantes, 45 matrículas). Quedan marcadas y, como las demás
+simbólicas, deben excluirse del costeo.
+
+\paso{4}{Seudonimizar de forma irreversible (Tarea 4)}
+
+\begin{dorada}
+\textbf{La idea.} Piense en una máquina de sellos que convierte cada cédula en un código. La
+máquina se configura con una clave secreta elegida al azar entre $2^{256}$ ($\approx 10^{77}$)
+posibilidades. Mientras existe la clave, la misma cédula produce siempre el mismo código, y así
+se reconoce al mismo estudiante en todos los periodos. Cuando la clave se destruye, nadie
+---tampoco quien la usó--- puede saber a qué cédula corresponde un código, ni calcular el código
+de una cédula nueva.
+\end{dorada}
+
+\textbf{Por qué no un hash simple.} Una cédula colombiana tiene como mucho 10 dígitos: hay a lo
+sumo $10^{10}$ posibilidades. Cualquiera puede calcular el SHA-256 de todas ellas en horas con un
+equipo corriente y armar la tabla inversa. Con HMAC eso exige conocer la clave.
+
+\textbf{Cómo se hizo}, dentro de \cod{03_anonimizar.py}:
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=0pt]
+  \item \textbf{Normalizar} el documento ---y, con la misma regla, el código de estudiante---:
+  dejar solo dígitos y quitar los ceros a la izquierda (\cod{0012.345.678} $\to$ \cod{12345678};
+  ejemplo ficticio). Esto fusionó a las 3 personas duplicadas: sin este paso habrían recibido
+  dos códigos cada una y su historia habría salido partida.
+  \item \textbf{Generar la llave}: \cod{secrets.token_bytes(32)}, el generador criptográfico del
+  sistema operativo. 256 bits.
+  \item \textbf{Calcular} \texttt{HMAC-SHA256(llave, etiqueta | documento)} y quedarse con los
+  primeros caracteres hexadecimales (Tabla~\ref{tab:seudonimos}).
+
+  Las \textbf{etiquetas} separan los dominios: si un mismo número apareciera como cédula y como
+  código, sus seudónimos no se parecerían en nada, así que no se pueden cruzar las dos columnas.
+
+  \cod{ID_PROGRAMA_EST} identifica una \textbf{vinculación}: la relación de una persona con un
+  programa, que en el sistema académico es un código de estudiante. La etiqueta interna
+  \cod{matricula} y el prefijo \cod{M} vienen de ese uso del sistema; no hay que confundirlos con
+  la \emph{matrícula} de este documento (estudiante $\times$ programa $\times$ periodo).
+  \item \textbf{Comprobar que no hay colisiones} (dos personas con el mismo código) sobre el
+  archivo completo, antes de filtrar: 41.589 $\to$ 41.589 y 54.637 $\to$ 54.637. El script
+  abortaba si había una. Por azar, la probabilidad era del orden de 0,0003\,\% para
+  \cod{ID_EST} y 0,14\,\% para \cod{ID_PROGRAMA_EST}.
+  \item \textbf{Destruir la llave}: \texttt{del llave}, y el proceso terminó al acabar el script. El
+  código no la escribe en ningún sitio ---disco, log, variable de entorno--- y la auditoría no
+  encontró rastros en ningún archivo. La única tabla de correspondencias cédula $\to$ código
+  existió en la memoria del proceso y murió con él.
+  \item \textbf{Prefijar} (hecho después, en el paso~10): \cod{E} para \cod{ID_EST}, \cod{M}
+  para \cod{ID_PROGRAMA_EST}.
+\end{enumerate}
+
+\begin{table}[!ht]
+\centering
+\caption{Los dos seudónimos.}
+\label{tab:seudonimos}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}P{2.3cm} L L@{}}
+\toprule
+ & \cab{\cod{ID_EST}} & \cab{\cod{ID_PROGRAMA_EST}} \\
+\midrule
+Viene de & cédula normalizada & código de estudiante \\
+Etiqueta & \cod{estudiante} & \cod{matricula} \\
+Largo & 12 hex (48 bits) & 10 hex (40 bits) \\
+Distintos en el archivo & 41.589 & 54.637 \\
+Distintos en el entregable & 18.563 & 19.782 \\
+Prefijo (paso~10) & \cod{E} & \cod{M} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El truncado a 12 y 10 caracteres \textbf{no debilita la irreversibilidad}, que depende de la
+llave, no del largo del código. Solo afecta la probabilidad de colisión, que se comprobó.
+
+\paso{5}{Suprimir y generalizar (Tarea 5)}
+
+Sobre las 448.489 filas de pregrado se aplicaron los tratamientos de la
+Tabla~\ref{tab:tratamientos}.
+
+\begin{table*}[tp]
+\centering
+\caption{Supresiones y generalizaciones aplicadas a las filas de pregrado.}
+\label{tab:tratamientos}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}P{3.4cm} L P{2.1cm} P{4.6cm}@{}}
+\toprule
+\cab{Columna} & \cab{Tratamiento} & \cab{Afectados} & \cab{Por qué} \\
+\midrule
+6 identificadores & Suprimidos (cédula y código sobreviven como seudónimos) & todas las filas & Identifican directamente \\
+19 de notas, promedios y fallas & Suprimidas, incluida la \cod{20221} & todas las filas & No sirven para costear; alto impacto \\
+\cod{CAU} & Suprimida & --- & Constante: una sola sede \\
+\cod{GRUPO} & Suprimida & --- & Singulariza (grupo $\times$ materia $\times$ periodo) y no interviene en el costeo \\
+\cod{VAL_PAGADO} & Redondeado al millar más cercano (las mitades exactas, al millar par) & todas & Quita la huella de los últimos dígitos; error máximo \$500. Las simbólicas de \$100 quedan en \$0 \\
+\cod{MATRICULA_SIMBOLICA} & Nueva bandera: valor original $\leq$ \$1.000 & 1.131 matrículas & Analítica: excluirlas del costeo \\
+\cod{PER_INGRESO} & Ingresos anteriores a 2015 agrupados en \cod{<2015} & 1.132 matrículas & La cola antigua tiene pocas personas por periodo \\
+\texttt{\#REIN} $\to$ \cod{N_REINTEGROS} & Valores de 4 o más (llegan a 14) agrupados en \cod{4+} & 1.117 matrículas & Cola larga y rara \\
+\texttt{SER PILO PAGA} $\to$ \cod{SUBSIDIO_EXTERNO} & Verdadero/falso, sin nombrar el programa & 675 matrículas & Atributo socioeconómico de un grupo pequeño \\
+\cod{Estado} $\to$ \cod{ESTADO} & \texttt{Sanción Disciplinaria} pasa a \cod{OTRO} & 36 matrículas & Dato disciplinario, raro y de alto impacto \\
+\cod{N/A} $\to$ \cod{ES_NUEVO}; \cod{REINTEGRO} & Verdadero/falso & --- & Simplificación \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\textbf{Lo que no se generalizó, a propósito:} programa, periodo, nivel, facultad y las materias.
+Son la sustancia del análisis. El plan proponía colapsar los programas pequeños; el consultor
+decidió no hacerlo (decisión~6).
+
+\paso{6}{Construir las tablas y barajar (Tarea 6)}
+
+\cod{matriculas_anon} agrega el detalle por (\cod{ID_EST}, \cod{ID_PROGRAMA_EST},
+\cod{PERIODO}) con las reglas de la Tabla~\ref{tab:agregacion}.
+
+\begin{table}[!ht]
+\centering
+\caption{Reglas de agregación de \texttt{matriculas\_anon}.}
+\label{tab:agregacion}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}P{3.0cm} L@{}}
+\toprule
+\cab{Columna} & \cab{Regla} \\
+\midrule
+\cod{CREDITOS_INSCRITOS} & Suma de los créditos de las materias \\
+\cod{N_MATERIAS} & Número de materias inscritas \\
+\cod{N_MATERIAS_REPITE} & Materias que no se cursan por primera vez (\cod{VEZVISTA} distinto de \texttt{1-…}) \\
+\cod{NIVEL_EST}, \cod{SUBSIDIO_EXTERNO}, \cod{REINTEGRO} & Máximo (da lo mismo que el primero, porque son constantes; se usó por prudencia) \\
+Las demás (\cod{VAL_PAGADO}, programa, estado, etc.) & Primer valor \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Tomar el «primer valor» solo es correcto si la columna es constante dentro de cada matrícula.
+\textbf{Se verificó, no se supuso:} \cod{VAL_PAGADO} tiene un único valor por matrícula en las
+78.625, y en la revisión del 2026-10-01 se comprobó lo mismo para las otras 12 columnas de origen
+que se agregan (\cod{08_revision_documental.py} §2). La agregación no pierde información.
+
+\cod{inscripciones_anon} conserva el grano original (una fila por materia) con 14 columnas.
+
+\textbf{Barajado.} Las dos tablas se reordenaron al azar (semillas 20260903 y 20260904). Sin esto,
+el orden de las filas seguiría el del archivo original, que viene ordenado de forma no aleatoria,
+y la posición de una fila sería en sí misma una pista. Ver la limitación en la §\ref{sec:fuente}.
+
+\textbf{Formato.} CSV separado por \cod{;}, UTF-8 con BOM, comprimido con gzip.
+
+\paso{7}{Verificar el entregable (Checkpoint B)}
+
+\cod{03b_verificar_entrega.py} hace \textbf{23 comprobaciones} y todas pasan
+(Tabla~\ref{tab:checkpointb}). Eran 22: la del redondeo se rehízo el 2026-10-01 porque no leía
+el entregable (§\ref{sec:incidentes}, R5).
+
+\begin{table*}[tp]
+\centering
+\caption{Comprobaciones del Checkpoint B (\texttt{03b\_verificar\_entrega.py}).}
+\label{tab:checkpointb}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}P{2.4cm} L P{5.2cm}@{}}
+\toprule
+\cab{Grupo} & \cab{Qué se comprueba} & \cab{Resultado} \\
+\midrule
+Forma & Filas y columnas de cada tabla & 78.625 $\times$ 20 y 448.489 $\times$ 14 \\
+Sin identificadores & Ninguna columna prohibida ni de notas; ningún valor de texto del entregable es igual a alguno de los 18.557 nombres distintos del universo & 0 nombres presentes \\
+Dinero & Dentro de cada programa $\times$ periodo, los valores entregados son exactamente los originales redondeados; total original contra entregado & 497 de 497 grupos idénticos; \$394.563.422.461 $\to$ \$394.562.395.000 \\
+Créditos & Original = detalle = agregado & 1.158.935 en los tres \\
+Consistencia & Suma de \cod{N_MATERIAS} = filas del detalle; 11 periodos; 60 programas & Correcto \\
+Integridad & Llave de matrícula única; inscripciones sin matrícula & Única; 0 huérfanas \\
+Barajado & \cod{matriculas_anon} ya no está ordenada por periodo & Correcto \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+La prueba del dinero merece una nota. Sin la llave no se puede emparejar cada matrícula entregada
+con la suya en el original, así que se compara lo que sí es comparable: dentro de cada programa y
+periodo, el conjunto de valores entregados tiene que ser idéntico al de los originales
+redondeados. Lo es en los 497 grupos, y la prueba es sensible: con un solo valor alterado en
+\$1.000, falla (\cod{08_revision_documental.py} §10). La diferencia total (0,00026\,\%) se
+reporta, pero por sí sola no prueba nada.
+
+\paso{8}{Medir el riesgo residual (Tarea 7)}
+
+\cod{04_riesgo.py} mide sobre los entregables tres formas de reidentificación: combinaciones de
+cuasi-identificadores (k-anonimato), unicidad del conjunto de materias y unicidad del valor
+pagado. Resultados en la §\ref{sec:riesgo}.
+
+\paso{9}{Diccionario y checksums (Tarea 8)}
+
+\cod{05_diccionario.py} escribe el diccionario \textbf{leyendo los CSV reales} ---tipos, nulos,
+rangos, valores frecuentes---, así esas columnas no pueden contradecir lo que se entrega. Origen y
+tratamiento de cada columna salen de una tabla fija dentro del script, cuyas cifras se revisaron
+el 2026-10-01. Escribe también \cod{CHECKSUMS.txt}.
+
+\paso{10}{Auditoría final y corrección de los seudónimos (Tarea 9)}
+
+\cod{06_auditoria_final.py} vuelve a verificar el original, barre los archivos de
+\cod{anonimizacion/} ---salvo los intermedios en claro, que solo inventaría--- buscando
+\textbf{formas} de correo, documento y celular, y busca rastros escritos de la llave. Encontró
+tres problemas (§\ref{sec:incidentes}): documentos reales en la propia documentación, seudónimos
+con forma de cédula y el auditor detectándose a sí mismo. Los tres se corrigieron.
+
+La corrección de los seudónimos (\cod{07_prefijar_ids.py}) no podía hacerse regenerando: la llave
+ya no existía y una nueva ejecución habría dado códigos distintos. Se \textbf{reetiquetó}:
+anteponer \cod{E} o \cod{M} a cada código es una correspondencia uno a uno sobre los valores ya
+emitidos, que conserva el vínculo entre periodos y entre las dos tablas (verificado: mismos
+18.563 estudiantes, 19.782 vinculaciones, 0 inscripciones huérfanas).
+
+\paso{11}{Revisión documental (2026-10-01)}
+
+Al escribir este documento se recalcularon todas las cifras, se repitieron las verificaciones y se
+revisó dónde hay copias en claro. Salieron un hallazgo grave (la semilla pública del barajado) y
+cinco menores. Uno de ellos ---que una comprobación del Checkpoint B no leía el entregable--- lo
+encontró una revisión independiente del borrador, que solo leyó documentos y scripts. Están en la §\ref{sec:incidentes} y,
+con su evidencia, en la bitácora; \cod{08_revision_documental.py} los reproduce.
+
+% ============================================================================
+\section{Destino de las 52 columnas}\label{sec:columnas}
+% ============================================================================
+
+El destino de cada una de las 52 columnas del original ---tratamiento, columna resultante y tabla
+en que queda--- está en el Anexo~\ref{app:columnas}. En resumen (Tabla~\ref{tab:cuenta}):
+
+\begin{table}[!ht]
+\centering
+\caption{Cuenta de columnas.}
+\label{tab:cuenta}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}P{2.0cm} r L@{}}
+\toprule
+\cab{Movimiento} & \cab{N.º} & \cab{Cuáles} \\
+\midrule
+Salen & 31 & 6 identificadores, 19 de notas, \cod{CAU}, \cod{GRUPO} y 4 sustituidas por una versión recodificada \\
+Siguen & 21 & Varias transformadas en su sitio \\
+Se crean & 10 & 2 seudónimos, 4 versiones recodificadas, la bandera de matrícula simbólica y 3 conteos por matrícula \\
+\midrule
+Entregadas & 31 & 20 en \cod{matriculas_anon} y 14 en \cod{inscripciones_anon}; comparten 3 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Cuenta.} Salen 31 columnas: 6 identificadores, 19 de notas, \cod{CAU}, \cod{GRUPO} y las 4
+sustituidas por una versión recodificada (\cod{Estado}, \texttt{SER PILO PAGA}, \texttt{\#REIN} y
+\cod{N/A}). Siguen 21, varias transformadas en su sitio. Se crean 10: los dos seudónimos, las
+cuatro versiones recodificadas, la bandera de matrícula simbólica y tres conteos por matrícula.
+Entre las dos tablas hay 31 columnas distintas ---la coincidencia con las 31 que salen es
+casual---: 20 en \cod{matriculas_anon} y 14 en \cod{inscripciones_anon}, que comparten
+\cod{ID_EST}, \cod{ID_PROGRAMA_EST} y \cod{PERIODO}.
+
+% ============================================================================
+\section{Qué se comprobó y cómo}\label{sec:comprobado}
+% ============================================================================
+
+La Tabla~\ref{tab:comprobado} reúne cada propiedad que se afirma del proceso, cómo se comprobó y
+qué script lo hace.
+
+\begin{table*}[tp]
+\centering
+\caption{Propiedades comprobadas y dónde se comprueban.}
+\label{tab:comprobado}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}P{3.5cm} L P{3.0cm} P{3.6cm}@{}}
+\toprule
+\cab{Propiedad} & \cab{Cómo se comprobó} & \cab{Resultado} & \cab{Dónde} \\
+\midrule
+El original nunca cambió & SHA-256 en cuatro momentos (inicio, tras extraer, auditoría, 2026-10-01) & Idéntico; permisos \cod{444} & \cod{06_auditoria_final.py} \\
+La extracción es fiel & 1.300 celdas al azar contra el original; conteos de filas y de no nulos & Sin diferencias & \cod{01b_verificar.py} \\
+No hay identificadores directos en los entregables & Columnas prohibidas; ningún valor igual a un nombre real; barrido de formas & 0 & \cod{03b_verificar_entrega.py}, \texttt{06\_…} \\
+Ni la documentación ni los scripts contienen datos personales & Barrido de formas (correo, documento, celular) en \cod{anonimizacion/}; cruce de 18 archivos, incluidos los de la raíz, contra los nombres, documentos, correos y celulares reales & 0 y 0 & \cod{06_auditoria_final.py}; \cod{08_revision_documental.py} §7 \\
+La llave no quedó escrita & Búsqueda de patrones de llave en scripts, logs y documentos & 0 rastros & \cod{06_auditoria_final.py} \\
+Seudónimos sin colisiones & Distintos antes = distintos después, sobre el archivo completo & 0 colisiones & \cod{03_anonimizar.py} (aborta si las hay) \\
+El análisis no se degradó & Valores por programa y periodo idénticos al original redondeado; créditos & 497 de 497 grupos; créditos idénticos & \cod{03b_verificar_entrega.py} \\
+La agregación es exacta & Cada columna agregada es constante dentro de la matrícula & 0 excepciones en 13 columnas & \cod{08_revision_documental.py} §2 \\
+Los entregables no cambian sin que se note & SHA-256 de cada archivo & Coinciden con \cod{CHECKSUMS.txt} & \cod{entrega/CHECKSUMS.txt} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+% ============================================================================
+\section{Riesgo residual}\label{sec:riesgo}
+% ============================================================================
+
+Ninguna anonimización útil tiene riesgo cero. Esto es lo que queda, medido sobre los entregables
+(informe completo en \cod{RIESGO_REIDENTIFICACION.md}).
+
+\subsection{Combinaciones de atributos (k-anonimato)}
+
+$k$ es cuántas matrículas comparten la misma combinación de atributos, contando la propia. Con
+$k = 1$ la combinación señala a una sola persona. El plan fijó como referencia $k \geq 5$. Cada
+fila de la Tabla~\ref{tab:kanon} suma atributos al conjunto de referencia por separado; no son
+acumulativas.
+
+\begin{table}[!ht]
+\centering
+\caption{Matrículas con combinación única ($k=1$) o casi única ($k<5$).}
+\label{tab:kanon}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}L r r@{}}
+\toprule
+\cab{Lo que sabe el atacante} & \cab{$k = 1$} & \cab{$k < 5$} \\
+\midrule
+Periodo y programa & 0,04\,\% & 0,18\,\% \\
+\textbf{Periodo, programa y nivel (semestre)} --- conjunto de referencia & \textbf{0,45\,\%} & \textbf{2,91\,\%} \\
+Referencia + periodo de ingreso & 6,88\,\% & 19,28\,\% \\
+Referencia + valor pagado & 14,59\,\% & 33,72\,\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{El criterio del plan (menos del 1\,\% bajo $k = 5$) no se cumple.} Era previsible: es la
+consecuencia de conservar con su nombre los programas pequeños (decisión~6), y el consultor lo
+aceptó en el Checkpoint A. El riesgo se concentra en licenciaturas en extinción y programas
+pequeños.
+
+\subsection{El conjunto de materias como huella}
+
+Quien sabe qué materias cursó alguien puede encontrarlo, aunque no haya nombres
+(Tabla~\ref{tab:materias}).
+
+\begin{table}[!ht]
+\centering
+\caption{Unicidad del conjunto de materias.}
+\label{tab:materias}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\columnwidth}{@{}L P{2.0cm} r@{}}
+\toprule
+\cab{Lo que sabe el atacante} & \cab{Se cuenta sobre} & \cab{Singulariza} \\
+\midrule
+3 materias sueltas, sin saber cuándo & estudiantes & 4,6\,\% \\
+3 materias de un semestre concreto (un compañero de clase) & estudiantes en un periodo & 26,0\,\% \\
+Todas las materias de un semestre & estudiantes en un periodo & 54,9\,\% \\
+La historia completa de materias & estudiantes & 71,0\,\% \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Este riesgo vive en \cod{inscripciones_anon} y \textbf{no se puede eliminar sin destruir el
+detalle por materia}. Por eso \cod{matriculas_anon} es el entregable principal.
+
+\subsection{El valor pagado}
+
+El 5,0\,\% de las matrículas tiene un valor único dentro de su programa y periodo. Quien sepa
+cuánto pagó una persona ---ella misma, su familia, quien maneje cartera--- puede encontrar su
+matrícula. \cod{VAL_PAGADO} es a la vez la variable central del estudio y el cuasi-identificador
+más fuerte: suprimirlo dejaría el dataset sin propósito.
+
+\subsection{Escenarios}
+
+\begin{table}[!ht]
+\centering
+\caption{Riesgo según lo que sabe quien intenta reidentificar.}
+\label{tab:escenarios}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}L P{3.4cm}@{}}
+\toprule
+\cab{Quién intenta reidentificar} & \cab{Riesgo} \\
+\midrule
+Alguien sin información previa & \textbf{Muy bajo}: no hay identificadores y la llave no existe \\
+Alguien que conoce programa, periodo y semestre de una persona & Bajo en programas grandes, \textbf{alto en los pequeños} \\
+Alguien que sabe cuánto pagó una persona & \alto\ \textbf{Alto} \\
+Alguien que sabe qué materias cursó una persona & \alto\ \textbf{Muy alto} en \cod{inscripciones_anon} \\
+Personal de la USTA con acceso a los sistemas fuente, sin la semilla & \alto\ \textbf{Alto}: cruzando columnas singulariza el 45,6\,\% de las matrículas (§\ref{sec:fuente}) \\
+Quien tenga el archivo fuente \textbf{y} la semilla publicada & \alto\ \textbf{Total} en \cod{inscripciones_anon} y, a través de ella, en \cod{matriculas_anon} (§\ref{sec:fuente}) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Recomendaciones}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=0pt]
+  \item Compartir \textbf{\cod{matriculas_anon}} como producto principal.
+  \item Compartir \textbf{\cod{inscripciones_anon}} solo si el análisis baja a nivel de materia, y
+  con justificación escrita.
+  \item Si los datos van a salir del equipo consultor, reconsiderar colapsar los 14 programas con
+  menos de 10 estudiantes.
+  \item Tratar ambos archivos como confidenciales: la anonimización reduce el riesgo, no lo anula.
+  \item Antes de que salgan del equipo, \textbf{rebarajarlos} con una permutación que no se
+  registre (§\ref{sec:pendientes}).
+\end{enumerate}
+
+% ============================================================================
+\section{Límites: lo que esta anonimización no garantiza}\label{sec:limites}
+% ============================================================================
+
+\subsection{No hay garantía formal frente a cualquier atacante}
+
+El método reduce y mide el riesgo; no ofrece garantías matemáticas como la privacidad
+diferencial. Frente a alguien con suficiente información auxiliar sobre una persona concreta (sus
+materias, su valor, su programa pequeño), el riesgo de la §\ref{sec:riesgo} es real.
+
+\subsection{Frente a quien tenga el archivo fuente, el entregable no es anónimo}\label{sec:fuente}
+
+La llave destruida protege frente a quien solo tiene los entregables. Pero quien tiene el
+original ---la USTA, y este equipo mientras lo conserve--- puede volver a ligar los registros:
+
+\begin{itemize}[leftmargin=*,itemsep=2pt,topsep=0pt]
+  \item \textbf{Exactamente, con la semilla.} La semilla del barajado de \cod{inscripciones_anon}
+  está escrita en \cod{03_anonimizar.py}. Con el original, el filtro de pregrado y esa semilla se
+  rehace la permutación: se verificó que \textbf{448.489 de 448.489 filas} vuelven a su posición
+  original. Cada \cod{ID_EST} queda ligado a su cédula y, como las dos tablas comparten
+  \cod{ID_EST}, también \cod{matriculas_anon} cuando se tienen ambas.
+  \item \textbf{Probablemente, sin la semilla.} El orden de \cod{matriculas_anon} no se puede
+  rehacer así: antes de barajarla, la tabla estaba ordenada por los seudónimos, y ese orden solo
+  se puede reconstruir con la llave. Pero cruzando siete columnas que el original también tiene
+  ---periodo, programa, nivel, valor, créditos, número de materias y estado--- el 45,6\,\% de las
+  matrículas es única, y una sola matrícula única liga toda la historia de esa persona.
+\end{itemize}
+
+\begin{alerta}
+La semilla solo convierte en exacto y total algo que ya era probable. La conclusión práctica:
+\textbf{para el poseedor del fuente esto es un dato seudonimizado}, y la forma de cerrarlo es no
+conservar el fuente al terminar el proyecto. Rebarajar con una permutación no registrada elimina
+la vía exacta; la probabilística no tiene remedio mientras exista el original.
+\end{alerta}
+
+\subsection{La llave existió en memoria}
+
+\texttt{del llave} borra el nombre, no la memoria: Python no sobrescribe los bytes. La llave y la
+tabla cédula $\to$ código vivieron en la memoria del proceso hasta que terminó el script. Lo
+mitigan que el proceso fue único y breve, que macOS cifra la memoria de intercambio y que el disco
+tiene FileVault. Lo que sí se garantiza y se verificó es que \textbf{nunca se escribió}.
+
+\subsection{Los entregables no se pueden regenerar}
+
+Es la otra cara de la irreversibilidad. Si se pierden o se dañan, una nueva ejecución dará otros
+códigos, y cualquier análisis ya hecho sobre los actuales no se podrá cruzar con ella. Hay que
+custodiar los archivos y verificar su checksum antes de usarlos. No se debe volver a ejecutar
+\cod{03_anonimizar.py}, que generaría códigos nuevos, ni \cod{07_prefijar_ids.py}, que
+reescribiría los archivos con otros checksums aunque el contenido fuera el mismo
+(§\ref{sec:reejecutar}).
+
+\subsection{La anonimización no corrige el dato}
+
+Los problemas de calidad del archivo siguen ahí: \cod{PAGO} no informa nada; \cod{PER_INGRESO}
+falta en el 43,6\,\% de las matrículas del entregable; hay 1 matrícula sin valor; y
+\cod{N_REINTEGROS} no cuadra con \cod{REINTEGRO} en 8.148 matrículas (todo indica que el primero
+es un conteo acumulado y el segundo el evento del periodo, sin confirmar con la USTA). Están
+documentados en el diccionario.
+
+\subsection{Esto no es un concepto jurídico}
+
+La calificación de los entregables bajo la Ley 1581 ---en particular a la luz de la
+§\ref{sec:fuente}--- la debe hacer la USTA.
+
+% ============================================================================
+\section{Custodia de los datos en claro, destrucción y decisiones pendientes}\label{sec:custodia}
+% ============================================================================
+
+\subsection{Dónde hay datos personales en claro hoy}
+
+La Tabla~\ref{tab:inventario} es el inventario de copias en claro a la fecha de la revisión.
+
+\begin{table*}[tp]
+\centering
+\caption{Inventario de datos personales en claro (2026-10-01).}
+\label{tab:inventario}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}P{4.6cm} L Q{1.45cm} P{5.2cm}@{}}
+\toprule
+\cab{Ubicación} & \cab{Contenido} & \cab{Tamaño} & \cab{Destino previsto} \\
+\midrule
+\cod{OFERTA_ACADEMICA_20211_20261.xlsx} (raíz del proyecto) & El original de la USTA, completo & 142,8 MB & Conservar como evidencia hasta el cierre; después devolver o eliminar según indique la USTA (P5) \\
+\cod{anonimizacion/trabajo/OFERTA_COPIA.xlsx} & Copia bit a bit del original & 142,8 MB & Destruir (P2) \\
+\cod{anonimizacion/_INSEGURO/oferta_raw.parquet} & Las 656.737 filas sin anonimizar & 19,7 MB & Destruir (P2) \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\cod{_INSEGURO/log_01_extraer.txt} está en la carpeta de intermedios pero solo contiene nombres de
+columna y conteos. Los entregables, la documentación y los scripts no contienen datos personales
+(auditoría y cruce contra los valores reales, §\ref{sec:comprobado}).
+
+\subsection{Hallazgo de la revisión del 2026-10-01 que requiere una decisión}\label{sec:hallazgos}
+
+\begin{alerta}
+\textbf{\color{ustaRojo}R1 $\cdot$ La semilla pública permite deshacer el barajado} a quien tenga
+el original (§\ref{sec:fuente}). La vía exacta se cierra rebarajando con una permutación que no
+se registre (P1); la probabilística, no conservando el fuente al cierre (P5).
+\end{alerta}
+
+\subsection{Decisiones pendientes}\label{sec:pendientes}
+
+La Tabla~\ref{tab:pendientes} lista las cinco decisiones abiertas. Ninguna de estas acciones se
+ejecutó en la revisión: todas borran, reescriben o comprometen datos, y le corresponden a quien
+indica la columna «Decide».
+
+\begin{table*}[tp]
+\centering
+\caption{Decisiones pendientes.}
+\label{tab:pendientes}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}l P{2.7cm} P{1.9cm} L P{4.4cm}@{}}
+\toprule
+\cab{\#} & \cab{Decisión} & \cab{Decide} & \cab{Opciones} & \cab{Recomendación} \\
+\midrule
+P1 & \textbf{Rebarajar los entregables} con una permutación aleatoria que no se registre & Consultor & Hacerlo ya, o justo antes de que salgan del equipo & Antes de cualquier envío fuera del equipo. No cambia contenido ni seudónimos, solo el orden y los checksums \\
+P2 & \textbf{Destruir los intermedios en claro} & Consultor & Ya, o al cierre del proyecto & Ya: si hicieran falta, se regeneran desde el original en un minuto \\
+P3 & \textbf{Autorización institucional} del tratamiento & USTA, a solicitud del consultor & --- & Pedirla por escrito \\
+P4 & \textbf{Aceptación escrita del riesgo} residual ($k < 5$ en el 2,91\,\%) & USTA & Someter el informe de riesgo o no & Someterlo, junto con la §\ref{sec:fuente}. El consultor ya lo aceptó en el Checkpoint A; falta la USTA \\
+P5 & \textbf{El original al cierre} & USTA y consultor & Devolverlo o eliminarlo & Es lo único que mantiene abierta la vía de la §\ref{sec:fuente} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{Procedimiento de destrucción al cierre}
+
+Desde la raíz del proyecto:
+
+\begin{codigo}[]
+# 1. Auditar antes: debe decir APROBADA
+python3 anonimizacion/scripts/06_auditoria_final.py
+# 2. Borrar los intermedios
+rm -rf anonimizacion/_INSEGURO anonimizacion/trabajo
+\end{codigo}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt,topsep=0pt,start=3]
+  \item Decidir el destino del original (P5).
+  \item Registrar en \cod{EVIDENCIA.md} la fecha y lo destruido.
+\end{enumerate}
+
+Con FileVault activo no hace falta sobrescribir el disco local.
+
+% ============================================================================
+\section{Incidentes, desviaciones y correcciones}\label{sec:incidentes}
+% ============================================================================
+
+Registrar los errores es parte de la evidencia: muestra qué se comprobó de verdad.
+
+\subsection{Desviaciones respecto al plan}\label{sec:desviaciones}
+
+La Tabla~\ref{tab:desviaciones} compara lo planeado con lo ejecutado.
+
+\begin{table*}[tp]
+\centering
+\caption{Desviaciones respecto al plan aprobado.}
+\label{tab:desviaciones}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}L L L@{}}
+\toprule
+\cab{Plan} & \cab{Ejecutado} & \cab{Motivo} \\
+\midrule
+Dar tipo a los datos al extraer & Extraer texto crudo y dar tipo en \cod{03} & Verificación celda a celda exacta \\
+«21 columnas de notas» & 19 & Error de conteo del plan \\
+La columna \cod{20221} está vacía o es espuria & Tiene 283.443 calificaciones; se suprime como nota & Descubierto al perfilar \\
+Scripts \cod{02_anonimizar} y \cod{03_tablas} & Un solo \cod{03_anonimizar.py} & La llave efímera exige un proceso \\
+41.592 cédulas $\to$ 41.592 códigos & 41.589 & 3 personas duplicadas por ceros a la izquierda \\
+\texttt{\#REIN} mayor que 3 $\to$ \cod{3+} & 4 o más $\to$ \cod{4+} & Mismo agrupamiento con una etiqueta exacta \\
+Colapsar programas con pocos estudiantes & No se colapsaron & Decisión del consultor \\
+Colapsar \texttt{Deserción Precoz} & No aparece en pregrado; solo se colapsó la sanción & Dato \\
+Menos del 1\,\% bajo $k = 5$ & 2,91\,\% & Consecuencia aceptada de la decisión anterior \\
+Si $k < 5$ supera el 1\,\%, iterar sobre la Tarea 5 con generalización más agresiva & No se iteró & Se aceptó el riesgo en lugar de colapsar programas \\
+Revisión visual de 50 filas por el consultor (Checkpoint B) & \cod{03b} muestra 5 matrículas al azar & Simplificación no registrada en su momento \\
+Seudónimos hexadecimales & Prefijados \texttt{E…} / \texttt{M…} & Incidente 2 \\
+Destruir los intermedios en la Tarea 9 & Conservados & Decisión del consultor \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsection{Incidentes}
+
+La Tabla~\ref{tab:incidentes} recoge los incidentes de la ejecución (1 a 3) y los hallazgos de la
+revisión del 2026-10-01 (R1 a R6).
+
+\begin{table*}[tp]
+\centering
+\caption{Incidentes y hallazgos, con su gravedad y corrección.}
+\label{tab:incidentes}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}P{1.7cm} L P{3.6cm} L@{}}
+\toprule
+\cab{\#} & \cab{Qué pasó} & \cab{Gravedad} & \cab{Corrección} \\
+\midrule
+Umbral no garantizado & La verificación exigía una diferencia total por redondeo menor al 0,0001\,\%, que el redondeo no garantiza & Bajo & Se pasó a comprobar la cota de \$500\ldots\ con una prueba que no leía el entregable (ver R5) \\
+1 & Al documentar los duplicados se copiaron \textbf{7 documentos reales} (de 4 personas) en la bitácora y en un comentario de código & \alto\ Alto & Redactados; el ejemplo pasó a ser ficticio; la auditoría vigila las formas desde entonces \\
+2 & 185 \cod{ID_PROGRAMA_EST} salieron todo-dígitos por azar y parecían cédulas o celulares & Bajo, falso positivo & Prefijos \cod{E} / \cod{M} sin regenerar \\
+3 & La auditoría se detectaba a sí misma & Bajo & Se excluye del barrido; patrones con límites estrictos \\
+R1 & La semilla pública permite deshacer el barajado a quien tenga el fuente & \alto\ \textbf{Alto} frente al poseedor del fuente & Pendiente: P1 y P5 \\
+R2 & La auditoría documentada fallaba por un literal en la descripción del Incidente 3 & Bajo & Frase reescrita; la auditoría vuelve a aprobar \\
+R3 & El informe de riesgo afirmaba sin medir que 3 materias singularizan a la mayoría & Bajo & Medido (4,6\,\% / 26,0\,\%); informe regenerado \\
+R4 & Imprecisiones de cifras, unidades, enlaces y comentarios en bitácora, diccionario y scripts & Menor & Corregidas; los CSV no cambiaron \\
+R5 & La comprobación «error $\leq$ \$500 por matrícula» comparaba el original consigo mismo y no leía el entregable & Bajo & Rehecha por programa $\times$ periodo: 497 de 497 grupos; se probó que detecta un solo valor alterado \\
+R6 & El auditor perdía un documento seguido de punto final, solo busca formas y solo recorre \cod{anonimizacion/}; varias cifras de la revisión no tenían script & Bajo & Patrón corregido; cruce contra valores reales y cifras en \cod{08_revision_documental.py} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\begin{nota}
+\textbf{\color{ustaAzul}Lecciones.} La del Incidente~1 se convirtió en regla verificada:
+\textbf{no se escriben identificadores reales en documentación ni en código, ni siquiera como
+ejemplo}. La auditoría vigila las formas en cada corrida, y \cod{08_revision_documental.py}
+cruza contra los valores reales. Y la de R5: una comprobación hay que probarla haciéndola fallar
+a propósito.
+\end{nota}
+
+% ============================================================================
+\section{Cómo verificar y qué se puede reproducir}\label{sec:verificar}
+% ============================================================================
+
+\subsection{Verificar}
+
+Desde la raíz del proyecto se ejecutan los comandos de la Figura~\ref{fig:comandos}. El primero
+debe decir \texttt{original INTACTO}; el segundo, \texttt{OK} en los tres archivos; el tercero,
+\texttt{AUDITORÍA: APROBADA}. El cuarto repite la revisión completa del 2026-10-01 (unos dos
+minutos; lee el intermedio en claro e imprime solo conteos).
+
+\begin{figure*}[tp]
+\begin{codigo}[basicstyle=\ttfamily\footnotesize]
+# 1. El original no cambió
+shasum -a 256 OFERTA_ACADEMICA_20211_20261.xlsx \
+  | grep -q f447e0d24e716b09a9abea1655dec6a0c2e143bd418fd93115e826c5a0eaa9d9 \
+  && echo "original INTACTO" || echo "ALERTA: el original cambió"
+
+# 2. Los entregables coinciden con sus checksums
+(cd anonimizacion/entrega && grep -v '^#' CHECKSUMS.txt | grep . | shasum -a 256 -c)
+
+# 3. Auditoría final
+python3 anonimizacion/scripts/06_auditoria_final.py
+
+# 4. Revisión documental completa (solo imprime conteos)
+python3 anonimizacion/scripts/08_revision_documental.py
+\end{codigo}
+\caption{Comandos de verificación, desde la raíz del proyecto.}
+\label{fig:comandos}
+\end{figure*}
+
+\subsection{Qué se puede volver a ejecutar}\label{sec:reejecutar}
+
+La Tabla~\ref{tab:reejecutar} dice, para cada script, si se puede repetir, si necesita datos en
+claro y qué escribe.
+
+\begin{table*}[tp]
+\centering
+\caption{Scripts: re-ejecución, datos que leen y archivos que escriben.}
+\label{tab:reejecutar}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}P{4.1cm} P{2.3cm} L L@{}}
+\toprule
+\cab{Script} & \cab{¿Se puede re-ejecutar?} & \cab{Necesita datos en claro} & \cab{Escribe} \\
+\midrule
+\cod{01_extraer.py} & Sí & Sí, la copia & \cod{_INSEGURO/oferta_raw.parquet} \\
+\cod{01b_verificar.py} & Sí & Sí, el parquet y el original & nada \\
+\cod{02_catalogo_programas.py} & Sí, determinista & Sí & \cod{catalogo_programas.csv} \\
+\cod{02c_filtro_validado.py} & Sí, determinista & No & \cod{filtro_pregrado.csv} \\
+\rowcolor{ustaRojo!7}\textbf{\cod{03_anonimizar.py}} & \nose & Sí & \textbf{Sobrescribe los entregables con códigos nuevos} \\
+\cod{03b_verificar_entrega.py} & Sí & Sí & nada \\
+\cod{04_riesgo.py} & Sí, determinista & No & \cod{RIESGO_REIDENTIFICACION.md} \\
+\cod{05_diccionario.py} & Sí & No & \cod{DICCIONARIO_DATOS.md}, \cod{CHECKSUMS.txt} \\
+\cod{06_auditoria_final.py} & Sí & Lee el original solo para calcular su huella; de los intermedios solo lee los \cod{.txt} y \cod{.md} al buscar rastros de la llave & nada \\
+\rowcolor{ustaRojo!7}\textbf{\cod{07_prefijar_ids.py}} & \nose & No & Reescribe los CSV: mismo contenido, pero gzip guarda la hora y \textbf{cambian los checksums} \\
+\cod{08_revision_documental.py} & Sí & Sí; imprime solo conteos & nada \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+Si algún día hay que repetir la anonimización completa ---por ejemplo, con un archivo nuevo---
+hay que tratarla como un entregable distinto, con códigos que no se cruzan con los actuales, y
+quitar la semilla fija del barajado (§\ref{sec:fuente}).
+
+% ============================================================================
+% ANEXOS
+% ============================================================================
+\clearpage
+\appendix
+\onecolumn
+\titleformat{\section}{\normalfont\large\bfseries\raggedright\color{ustaAzul}}{Anexo \thesection.}{0.5em}{}[{\color{ustaDorado}\titlerule[0.8pt]}]
+\addtocontents{toc}{\protect\medskip\protect\noindent{\protect\bfseries\protect\color{ustaAzul}Anexos}\protect\par}
+
+% ============================================================================
+\section{Destino de las 52 columnas}\label{app:columnas}
+% ============================================================================
+
+\textbf{M} = \cod{matriculas_anon} \quad$\cdot$\quad \textbf{I} = \cod{inscripciones_anon}.
+
+{\small
+\begin{xltabular}{\textwidth}{@{}l P{4.6cm} L P{4.1cm} l@{}}
+\caption{Destino de cada columna del archivo original.}\label{tab:columnas52}\\
+\toprule
+\cab{Col} & \cab{Columna original} & \cab{Tratamiento} & \cab{Columna resultante} & \cab{Tabla} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\textit{(continuación de la Tabla~\ref{tab:columnas52})}}\\
+\toprule
+\cab{Col} & \cab{Columna original} & \cab{Tratamiento} & \cab{Columna resultante} & \cab{Tabla} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{\textit{(continúa en la página siguiente)}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+A & \cod{CAU} & Suprimida (constante) & --- & --- \\
+B & \cod{FACULTAD} & Sin cambios & \cod{FACULTAD} & M \\
+C & \cod{PERIODO} & Sin cambios & \cod{PERIODO} & M, I \\
+D & \cod{CODIGO} & \textbf{Seudonimizada} & \cod{ID_PROGRAMA_EST} & M, I \\
+E & \cod{COD_UNIDAD} & Sin cambios & \cod{COD_UNIDAD} & M \\
+F & \texttt{PROGRAMA ACADEMICO} & Filtrada a 60 programas; renombrada & \cod{PROGRAMA_ACADEMICO} & M \\
+G & \texttt{APELLIDOS Y NOMBRES} & \textbf{Suprimida} & --- & --- \\
+H & \cod{IDENTIFICACION} & \textbf{Seudonimizada} & \cod{ID_EST} & M, I \\
+I & \cod{PER_INGRESO} & Generalizada en su sitio (\cod{<2015}) & \cod{PER_INGRESO} & M \\
+J & \cod{DIR_EMAIL} & \textbf{Suprimida} & --- & --- \\
+K & \cod{CELULAR} & \textbf{Suprimida} & --- & --- \\
+L & \cod{DIR_EMAIL_PER} & \textbf{Suprimida} & --- & --- \\
+M & \cod{PENSUM_ESTUDIANTE} & Sin cambios & \cod{PENSUM_ESTUDIANTE} & M \\
+N & \cod{MAT_PENSUM} & Sin cambios & \cod{MAT_PENSUM} & I \\
+O & \cod{MAT_PENSUM_1} & Sin cambios & \cod{MAT_PENSUM_1} & I \\
+P & \cod{Estado} & Sustituida por una versión recodificada (sanción $\to$ \cod{OTRO}) & \cod{ESTADO} & M \\
+Q & \cod{C_MAT} & Sin cambios & \cod{C_MAT} & I \\
+R & \cod{PENSUM_OFERTA} & Sin cambios & \cod{PENSUM_OFERTA} & I \\
+S & \cod{NOM_MATERIA} & Sin cambios & \cod{NOM_MATERIA} & I \\
+T & \cod{GRUPO} & Suprimida (cuasi-identificador) & --- & --- \\
+U & \cod{COD_UNIDAD_1} & Renombrada & \cod{COD_UNIDAD_OFERTA} & I \\
+V & \texttt{programa que oferta la materia} & Renombrada & \cod{PROGRAMA_OFERTA} & I \\
+W & \cod{FAC_OFERTA} & Sin cambios & \cod{FAC_OFERTA} & I \\
+X & \cod{NIVEL_EST} & Máximo por matrícula & \cod{NIVEL_EST} & M \\
+Y & \cod{NIVEL_MAT} & Sin cambios & \cod{NIVEL_MAT} & I \\
+Z & \cod{CREDITOS} & Sin cambios; sumada por matrícula & \cod{CREDITOS} $\cdot$ \cod{CREDITOS_INSCRITOS} & I $\cdot$ M \\
+AA & \cod{VAL_PAGADO} & Redondeada al millar en su sitio; deriva una bandera & \cod{VAL_PAGADO} $\cdot$ \cod{MATRICULA_SIMBOLICA} & M \\
+AB & \cod{PAGO} & Sin cambios & \cod{PAGO} & M \\
+AC & \cod{PROM_SEMESTRE} & Suprimida (nota) & --- & --- \\
+AD & \cod{PRO_ACUMULADO} & Suprimida (nota) & --- & --- \\
+AE & \cod{20221} & Suprimida (contiene notas) & --- & --- \\
+AF & \cod{VEZVISTA} & Sin cambios; contada por matrícula & \cod{VEZVISTA} $\cdot$ \cod{N_MATERIAS_REPITE} & I $\cdot$ M \\
+AG & \texttt{SER PILO PAGA} & Sustituida por una versión recodificada (verdadero/falso) & \cod{SUBSIDIO_EXTERNO} & M \\
+AH & \cod{REINTEGRO} & Recodificada en su sitio (verdadero/falso) & \cod{REINTEGRO} & M \\
+AI & \texttt{\#REIN} & Sustituida por una versión recodificada (topada en \cod{4+}) & \cod{N_REINTEGROS} & M \\
+AJ & \cod{DEFINITIVA} & Suprimida (nota) & --- & --- \\
+AK & \cod{N/A} (antiguo o nuevo) & Sustituida por una versión recodificada (verdadero/falso) & \cod{ES_NUEVO} & M \\
+AL--AZ & \texttt{\%1}--\texttt{\%5}, \cod{Nota1}--\cod{Nota5}, \cod{Fallas1}--\cod{Fallas5} & Suprimidas (15 de notas) & --- & --- \\
+--- & (nueva) & Conteo de materias por matrícula & \cod{N_MATERIAS} & M \\
+\end{xltabular}
+}
+
+% ============================================================================
+\section{Glosario}\label{app:glosario}
+% ============================================================================
+
+{\small
+\begin{xltabular}{\textwidth}{@{}P{4.2cm} L@{}}
+\caption{Términos usados en este documento.}\label{tab:glosario}\\
+\toprule
+\cab{Término} & \cab{Significado aquí} \\
+\midrule
+\endfirsthead
+\multicolumn{2}{l}{\textit{(continuación de la Tabla~\ref{tab:glosario})}}\\
+\toprule
+\cab{Término} & \cab{Significado aquí} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{2}{r}{\textit{(continúa en la página siguiente)}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{Anonimizar} & Lograr que nadie pueda ligar un registro con una persona por medios razonables \\
+\textbf{Seudonimizar} & Reemplazar los identificadores por códigos; si el vínculo puede rehacerse, el dato sigue siendo personal \\
+\textbf{Responsable / encargado} & Quien decide sobre el tratamiento de los datos (la USTA) y quien los trata por cuenta de él (el consultor) \\
+\textbf{HMAC-SHA256} & Función que mezcla un dato con una llave secreta y da un código; sin la llave no se puede invertir ni recalcular \\
+\textbf{Llave efímera} & Llave que solo existe durante la ejecución y nunca se guarda \\
+\textbf{Hexadecimal, bit} & Un carácter hexadecimal (0--9, a--f) codifica 4 bits; 12 caracteres son 48 bits \\
+\textbf{Colisión} & Que dos valores distintos reciban el mismo código \\
+\textbf{Semilla} & Número que fija una secuencia «aleatoria»: con la misma semilla sale siempre la misma \\
+\textbf{Permutación} & Un reordenamiento de las filas \\
+\textbf{Barajar} & Reordenar las filas al azar para que la posición no sea una pista \\
+\textbf{Cuasi-identificador} & Atributo que no identifica solo pero sí combinado (programa + periodo + semestre) \\
+\textbf{k-anonimato} & Cuántos registros comparten una combinación de cuasi-identificadores, contando el propio; $k = 1$ es único \\
+\textbf{Unicidad de trayectoria} & Que el conjunto de materias de alguien no lo tenga nadie más \\
+\textbf{Privacidad diferencial} & Técnica que añade ruido calculado para dar una garantía matemática de privacidad; aquí no se usó \\
+\textbf{Generalizar} & Hacer menos preciso un dato (redondear, agrupar) \\
+\textbf{Topar} (\emph{top-coding}) & Agrupar los valores extremos en una categoría abierta (\cod{4+}) \\
+\textbf{Checksum SHA-256} & Huella de 64 caracteres de un archivo; si cambia un solo bit, cambia la huella \\
+\textbf{Intermedio en claro} & Archivo de trabajo que todavía tiene datos personales sin anonimizar \\
+\textbf{Parquet} & Formato de archivo por columnas, compacto, para datos tabulares \\
+\textbf{Lectura en streaming} & Leer un archivo por partes, sin cargarlo entero en memoria \\
+\textbf{BOM} & Marca invisible al inicio de un archivo UTF-8 que le indica a Excel la codificación \\
+\textbf{Matrícula} & Aquí: un estudiante en un programa en un periodo. Es el grano en que se paga \\
+\textbf{Vinculación} & La relación de una persona con un programa (un código de estudiante). Quien cursa dos programas tiene dos \\
+\textbf{Inscripción} & Una materia inscrita en una matrícula. Es el grano del archivo original \\
+\textbf{Matrícula simbólica} & Valor pagado de \$1.000 o menos (intercambios, casos sin cobro ordinario) \\
+\textbf{Nivel} & Semestre que cursa el estudiante (\cod{NIVEL_EST}) o al que pertenece la materia (\cod{NIVEL_MAT}) \\
+\textbf{Pensum} & Plan de estudios de un programa en una versión dada \\
+\textbf{Tarea, checkpoint} & Las 9 tareas del plan y sus 3 puntos de control con aprobación del consultor \\
+\end{xltabular}
+}
+
+% ============================================================================
+\section{Mapa de documentos y scripts}\label{app:mapa}
+% ============================================================================
+
+Rutas relativas a \cod{anonimizacion/}, salvo las que empiezan por \cod{../} (raíz del proyecto).
+
+{\small
+\begin{xltabular}{\textwidth}{@{}P{5.6cm} L P{4.4cm}@{}}
+\caption{Documentos del proceso y cuándo leerlos.}\label{tab:mapa}\\
+\toprule
+\cab{Archivo} & \cab{Qué es} & \cab{Leer cuando\ldots} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\textit{(continuación de la Tabla~\ref{tab:mapa})}}\\
+\toprule
+\cab{Archivo} & \cab{Qué es} & \cab{Leer cuando\ldots} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\textit{(continúa en la página siguiente)}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+\cod{METODOLOGIA_ANONIMIZACION.md} & La versión en Markdown de este documento & Siempre, primero \\
+\cod{EVIDENCIA.md} & Bitácora cronológica con checksums, decisiones, incidentes y la revisión del 2026-10-01 & Se necesita la prueba de algo \\
+\cod{RIESGO_REIDENTIFICACION.md} & Informe de riesgo residual, generado por \cod{04_riesgo.py} & Se va a compartir un entregable \\
+\cod{entrega/DICCIONARIO_DATOS.md} & Columnas, tipos, rangos y advertencias de uso & Se van a analizar los datos \\
+\cod{entrega/CHECKSUMS.txt} & Huellas de los entregables & Antes de usar o enviar un entregable \\
+\cod{../PLAN_ANONIMIZACION.md} & El plan aprobado (2026-09-02), con sus 9 tareas & Interesa lo que se planeó (las diferencias con lo ejecutado están en la §\ref{sec:desviaciones}) \\
+\cod{catalogo_programas.csv} & Los 576 programas clasificados (solo agregados) & Se cuestiona el filtro de pregrado \\
+\cod{filtro_pregrado.csv} & Los 576 programas con la marca \cod{incluir_en_estudio} (60 verdaderas) y el motivo de cada decisión & Ídem \\
+\cod{_INSEGURO/LEEME_ANTES_DE_TOCAR.md} & Advertencias sobre los intermedios en claro & Antes de abrir esa carpeta \\
+\cod{../REGISTRO_PROYECTO.md} & Registro general del proyecto; su §8 tiene el chequeo de salud & Al retomar el proyecto \\
+\end{xltabular}
+}
+
+Los scripts están en \cod{scripts/}, numerados en el orden en que se ejecutaron; la
+Tabla~\ref{tab:reejecutar} dice qué hace cada uno y si se puede repetir.
+
+% ============================================================================
+\section{Cifras clave}\label{app:cifras}
+% ============================================================================
+
+{\small
+\begin{xltabular}{\textwidth}{@{}L P{5.2cm} P{4.6cm}@{}}
+\caption{Cifras clave y el script que las produce.}\label{tab:cifras}\\
+\toprule
+\cab{Cifra} & \cab{Valor} & \cab{Fuente} \\
+\midrule
+\endfirsthead
+\multicolumn{3}{l}{\textit{(continuación de la Tabla~\ref{tab:cifras})}}\\
+\toprule
+\cab{Cifra} & \cab{Valor} & \cab{Fuente} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{3}{r}{\textit{(continúa en la página siguiente)}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Filas y columnas del original & 656.737 $\times$ 52 & perfilado; \cod{01b_verificar.py} \\
+Personas en el original & 41.589 (41.592 antes de normalizar) & \cod{03_anonimizar.py} \\
+Programas en el original & 576 & \cod{02_catalogo_programas.py} \\
+Programas del estudio & 60 & \cod{02c_filtro_validado.py} \\
+Filas del estudio & 448.489 (68,3\,\%) & \cod{03_anonimizar.py} \\
+Estudiantes del estudio & 18.563 & \cod{03b_verificar_entrega.py} \\
+Vinculaciones a programa & 19.782 & \cod{07_prefijar_ids.py} \\
+Matrículas & 78.625 & \cod{03b_verificar_entrega.py} \\
+Valor total matriculado & \$394.563.422.461 (original) $\cdot$ \$394.562.395.000 (entregado) & \cod{03b_verificar_entrega.py} \\
+Grupos programa $\times$ periodo con valores idénticos al original redondeado & 497 de 497 & \cod{03b_verificar_entrega.py} \\
+Error máximo por redondeo & \$500 por matrícula & \cod{03b_verificar_entrega.py} \\
+Créditos inscritos & 1.158.935 & \cod{03b_verificar_entrega.py} \\
+Matrículas simbólicas & 1.131 (1.127 de \$100 y 4 de \$0) & \cod{08_revision_documental.py} §3 \\
+Columnas suprimidas & 31 de 52 & \cod{03_anonimizar.py} \\
+$k < 5$ (conjunto de referencia) & 2,91\,\% de las matrículas & \cod{04_riesgo.py} \\
+Estudiantes con historia de materias única & 71,0\,\% & \cod{04_riesgo.py} \\
+Filas re-ligables con fuente + semilla & 448.489 de 448.489 & \cod{08_revision_documental.py} §5 \\
+Matrículas únicas para el poseedor del fuente, sin semilla & 45,6\,\% & \cod{08_revision_documental.py} §6 \\
+\end{xltabular}
+}
+
+\vspace{1cm}
+\begin{flushright}
+{\color{ustaAzul}\bfseries Consultoría USTA 2026-II --- Universidad Santo Tomás}\\
+Responsable: Javier Mauricio Sierra\\
+1 de octubre de 2026
+\end{flushright}
+
+% ============================================================================
+\end{document}
