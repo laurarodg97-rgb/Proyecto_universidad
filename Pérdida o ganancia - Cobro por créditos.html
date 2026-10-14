@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pérdida o ganancia — Cobro por créditos</title>
+<style>
+:root{--bg:#F3F5F9;--card:#fff;--ink:#14233A;--mut:#5B6B82;--acc:#1E3A5F;--acc2:#C8A24A;--line:#DCE2EC;--neg:#B3261E;--pos:#2E7D4F;--hd:#0B1B33;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0D1726;--card:#16263D;--ink:#EAF0F8;--mut:#9DB0C9;--acc:#8FB4E8;--acc2:#E0BC62;--line:#2A3E5C;--neg:#FF8A80;--pos:#7ED6A0;--hd:#081120}}
+:root[data-theme="dark"]{--bg:#0D1726;--card:#16263D;--ink:#EAF0F8;--mut:#9DB0C9;--acc:#8FB4E8;--acc2:#E0BC62;--line:#2A3E5C;--neg:#FF8A80;--pos:#7ED6A0;--hd:#081120}
+html,body{height:100%;margin:0}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{background:var(--bg);color:var(--ink);font-family:Georgia,"Times New Roman",serif;overflow:hidden}
+*{box-sizing:border-box}
+.slide{position:absolute;inset:0 0 44px 0;padding:4vh 6vw;display:none;flex-direction:column;justify-content:center;overflow-y:auto;animation:in .35s ease}
+.slide.on{display:flex}@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+h1{font-size:clamp(34px,6vw,72px);margin:.1em 0;line-height:1.05;letter-spacing:-.5px}
+h2{font-size:clamp(24px,3.6vw,42px);margin:0 0 .5em;color:var(--acc);border-bottom:3px solid var(--acc2);padding-bottom:.25em;display:inline-block;align-self:flex-start}
+p,li{font-size:clamp(15px,1.7vw,22px);line-height:1.45}
+.sub{font-family:system-ui,sans-serif;color:var(--mut);letter-spacing:.14em;text-transform:uppercase;font-size:clamp(12px,1.3vw,16px)}
+.cover{background:linear-gradient(135deg,var(--hd),#1E3A5F);color:#fff;border-radius:0}
+.cover .sub{color:#E0BC62}.cover h1{color:#fff}.cover .line{width:90px;height:4px;background:#E0BC62;margin:18px 0}
+.cover p{color:#D6E0F0;margin:.25em 0}.cover b{color:#fff}
+.q{font-size:clamp(24px,4vw,50px);line-height:1.25;border-left:6px solid var(--acc2);padding-left:.6em;max-width:1000px;color:var(--ink)}
+.grid{display:grid;gap:14px}.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 20px}
+.card h3{margin:0 0 4px;font-size:clamp(17px,1.9vw,24px);color:var(--acc)}.card .yr{font-family:system-ui,sans-serif;color:var(--mut);font-size:13px;margin-bottom:8px}
+.card p,.card li{font-size:clamp(14px,1.45vw,18px);margin:.35em 0}.card ul{padding-left:1.1em;margin:.3em 0}
+.kpi{text-align:center;padding:22px 10px}.kpi .n{font-size:clamp(34px,5vw,62px);font-weight:700;color:var(--acc);line-height:1}.kpi .l{font-family:system-ui,sans-serif;color:var(--mut);margin-top:8px;font-size:clamp(12px,1.4vw,17px);text-transform:uppercase;letter-spacing:.08em}
+.img{background:#fff;border-radius:12px;border:1px solid var(--line);padding:8px;display:flex;justify-content:center}.img img{max-width:100%;max-height:62vh;height:auto}
+.note{color:var(--mut);font-style:italic;margin-top:12px}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;font-size:clamp(12px,1.35vw,17px)}
+th{background:var(--hd);color:#fff;text-align:right;padding:10px 12px;font-family:system-ui,sans-serif;font-weight:600}th:first-child,td:first-child{text-align:left}
+td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto}.bar{display:inline-block;height:8px;border-radius:4px;background:var(--acc2);vertical-align:middle;margin-left:8px}
+.pill{display:inline-block;padding:3px 10px;border-radius:6px;font-weight:700;color:#fff;min-width:74px;text-align:center}
+.step{display:flex;gap:14px;align-items:flex-start}.step .no{flex:none;width:38px;height:38px;border-radius:50%;background:var(--acc);color:var(--card);display:grid;place-items:center;font-family:system-ui;font-weight:700}
+.big{font-size:clamp(26px,3.6vw,46px);font-weight:700}.neg{color:var(--neg)}.pos{color:var(--pos)}
+.nav{position:fixed;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 4vw;background:var(--card);border-top:1px solid var(--line);font-family:system-ui,sans-serif;font-size:14px;color:var(--mut)}
+.nav button{background:var(--acc);color:var(--card);border:0;border-radius:8px;padding:6px 16px;cursor:pointer;font-size:14px}.nav button:disabled{opacity:.35}
+.pg{position:fixed;top:env(safe-area-inset-top,0px);left:0;height:4px;background:var(--acc2);transition:width .3s}
+
+.kgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:560px){.kgrid{grid-template-columns:repeat(2,1fr)}}
+.steps{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:560px){.steps{grid-template-columns:1fr}}
+.slide.top{justify-content:flex-start;padding-top:2vh}
+.hc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 22px 10px}
+.hc h3{text-align:center;margin:0 0 10px;font-size:clamp(17px,2vw,26px);color:var(--ink)}
+.hr{display:grid;grid-template-columns:minmax(120px,32%) 1fr;align-items:center;gap:12px;height:clamp(28px,5.6vh,48px)}
+.hr .lb{text-align:right;text-transform:uppercase;font-size:clamp(10px,1.15vw,15px);line-height:1.15}
+.hr .tr{position:relative;height:100%;display:flex;align-items:center;border-left:2px solid var(--line)}
+.hr .b{height:62%;background:var(--acc);border-radius:0 4px 4px 0}
+.hr .v{font-weight:700;margin-left:8px;font-size:clamp(12px,1.4vw,18px)}
+.ax{text-align:center;font-weight:700;margin-top:6px;font-size:clamp(12px,1.3vw,16px)}
+.lg{display:flex;align-items:center;gap:10px;margin:10px 0 0;font-family:system-ui,sans-serif;font-size:13px;color:var(--mut)}
+.lg i{flex:0 0 min(260px,40vw);height:12px;border-radius:6px;background:linear-gradient(90deg,#9E1B1B,#F2B5A3)}
+.slide.top .steps{flex:1;max-height:74vh;grid-auto-rows:1fr;align-content:stretch}
+.slide.top .step{align-items:center;padding:20px 24px}
+.slide.top .step p{font-size:clamp(15px,1.7vw,22px)}
+.slide.top .step b{font-size:clamp(18px,2.1vw,28px);color:var(--acc)}
+.slide.top .step .no{width:46px;height:46px;font-size:20px}
+.k4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:700px){.k4{grid-template-columns:repeat(2,1fr)}}
+.s3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+@media(max-width:700px){.s3{grid-template-columns:1fr}}
+.s3 .card{text-align:left}.s3 .card b{color:var(--acc)}
+.thanks{margin-top:18px;font-size:clamp(22px,3vw,38px);color:var(--acc);font-weight:700}
+.nx li{margin:.7em 0}
+li{margin:.3em 0}
+</style></head><body>
+<div class="pg" id="pg"></div>
+
+<section class="slide cover on">
+<div class="sub">Consultoría</div><h1>Pérdida o ganancia</h1><div class="line"></div>
+<p style="font-size:clamp(18px,2.4vw,30px)">En escenario contrafactual de cobro por créditos</p>
+<p style="margin-top:28px"><b>Gabriel Aldana</b> · <b>Laura Rodriguez</b> · <b>Juan Roa</b></p>
+<p>Asesor técnico: <b>Javier Sierra</b></p>
+</section>
+
+<section class="slide"><div class="sub">Pregunta problema</div>
+<p class="q">¿Qué tanto hubiera ganado o perdido la universidad si hubiera implementado el cobro por créditos académicos, por facultad?</p></section>
+
+<section class="slide"><h2>Estado del arte</h2>
+<div class="grid g3">
+<div class="card"><h3>Hemelt &amp; Stange</h3><div class="yr">2016 · Michigan (públicas)</div><p><i>Marginal Pricing and Student Investment in Higher Education</i></p><ul>
+<li>La tarifa plana lleva al <b>7%</b> a intentar una materia extra (3 créditos)</li><li>No aumenta los créditos aprobados ni acorta la graduación</li><li>Retiros <b>+6 pp</b>; GPA <b>−0.05</b></li><li>El cobro lineal genera ingresos sin distorsionar la graduación</li></ul></div>
+<div class="card"><h3>Eickhoff</h3><div class="yr">2026 · Regresiones MCO</div><p><i>The Impact of Tuition Structures on Enrolled Credits</i></p><ul>
+<li>Tarifa <i>plateau</i>: <b>+0.462</b> créditos por semestre (+3.25%)</li><li>“Equitable lift”: sube la carga de todos los grupos por igual</li><li>Quienes tienen más restricciones pagan <b>más por crédito</b>: penalización financiera implícita</li></ul></div>
+<div class="card"><h3>Stange</h3><div class="yr">2013 · 142 universidades públicas de EE. UU. (1990–2010)</div><p><i>Differential Pricing in Undergraduate Education</i></p><ul>
+<li>Analiza abandonar el precio uniforme por tarifas según costo y demanda de cada carrera; 50 de las 142 lo implementaron</li><li>Tarifas más altas redujeron graduados en Ingeniería (<b>−1.1 pp</b>) y Negocios (<b>−0.8 pp</b>) tras tres años</li><li>Enfermería <b>+0.8 pp</b> (elasticidad +0.97): los ingresos extra financiaron más cupos</li><li>Mujeres y minorías, más sensibles al aumento, sin más becas institucionales</li></ul></div>
+</div></section>
+
+<section class="slide"><h2>Anonimización de los datos</h2>
+<div class="k4">
+<div class="card kpi"><div class="n">656,737</div><div class="l">Filas originales</div></div>
+<div class="card kpi"><div class="n">52</div><div class="l">Columnas originales</div></div>
+<div class="card kpi"><div class="n">41,589</div><div class="l">Personas en el archivo</div></div>
+<div class="card kpi"><div class="n">31</div><div class="l">Columnas eliminadas</div></div>
+</div>
+<div class="s3">
+<div class="step card"><div class="no">1</div><div><b>Minimizar</b><p>Eliminamos identificadores directos, notas, grupo y sede: no aportaban al análisis financiero.</p></div></div>
+<div class="step card"><div class="no">2</div><div><b>Código irreversible</b><p>La cédula se convierte con HMAC-SHA256 y una llave temporal que se destruyó. Se sigue al estudiante entre semestres sin saber quién es.</p></div></div>
+<div class="step card"><div class="no">3</div><div><b>Generalizar y verificar</b><p>Valor pagado redondeado al millar y cuadre exacto de lo financiero contra el original.</p></div></div>
+</div>
+<p class="note">El original tiene una fila por materia inscrita; la base final está agregada por estudiante-periodo.</p></section>
+
+
+<section class="slide"><h2>Análisis exploratorio</h2>
+<p style="max-width:900px">La base tiene 20 variables; nos concentramos en las que responden a la pregunta: <b>cuánto paga</b> cada estudiante, <b>cuántos créditos</b> cursa y si tiene <b>descuento</b>.</p>
+<div class="kgrid" style="margin-top:10px">
+<div class="card kpi"><div class="n">78,625</div><div class="l">Registros (estudiante-periodo)</div></div>
+<div class="card kpi"><div class="n">18,563</div><div class="l">Estudiantes únicos</div></div>
+<div class="card kpi"><div class="n">60</div><div class="l">Programas académicos</div></div>
+<div class="card kpi"><div class="n">9</div><div class="l">Facultades</div></div>
+<div class="card kpi"><div class="n">11</div><div class="l">Periodos analizados</div></div>
+<div class="card kpi"><div class="n" style="font-size:clamp(26px,3.6vw,44px)">2021-1 → 2026-1</div><div class="l">Rango de periodos</div></div>
+</div>
+<p class="note">Cada estudiante aparece una vez por semestre matriculado: en promedio, poco más de 4 periodos.</p></section>
+
+<section class="slide"><h2>Registros por facultad</h2>
+<div class="hc"><h3>Registros por facultad (2021-1 a 2026-1)</h3><div class="hr"><div class="lb">Ciencias Económicas y Administrativas</div><div class="tr"><div class="b" style="width:88.0%"></div><span class="v">33.6%</span></div></div><div class="hr"><div class="lb">Ingenierías</div><div class="tr"><div class="b" style="width:69.1%"></div><span class="v">26.4%</span></div></div><div class="hr"><div class="lb">Ciencias de la Salud</div><div class="tr"><div class="b" style="width:31.7%"></div><span class="v">12.1%</span></div></div><div class="hr"><div class="lb">Ciencias Jurídicas y Políticas</div><div class="tr"><div class="b" style="width:25.9%"></div><span class="v">9.9%</span></div></div><div class="hr"><div class="lb">Ciencias de la Comunicación y la Creación</div><div class="tr"><div class="b" style="width:21.0%"></div><span class="v">8.0%</span></div></div><div class="hr"><div class="lb">Ciencias Sociales y de la Educación</div><div class="tr"><div class="b" style="width:15.2%"></div><span class="v">5.8%</span></div></div><div class="hr"><div class="lb">Filosofía y Teología</div><div class="tr"><div class="b" style="width:7.1%"></div><span class="v">2.7%</span></div></div><div class="hr"><div class="lb">Unidades Académicas</div><div class="tr"><div class="b" style="width:1.8%"></div><span class="v">0.7%</span></div></div><div class="hr"><div class="lb">Educación Continuada - DUAD</div><div class="tr"><div class="b" style="width:1.6%"></div><span class="v">0.6%</span></div></div><div class="ax">% de estudiantes-periodo</div></div>
+<p style="margin-top:12px"><b>Economía y Administración (33.6%)</b> e <b>Ingenierías (26.4%)</b> concentran el <b>60%</b> de la matrícula.</p></section>
+
+<section class="slide"><h2>Resumen por facultad</h2>
+<div class="tw"><table id="t1"></table></div>
+<ul style="margin-top:12px"><li>Economía e Ingenierías: pagos medianos intermedios; su peso viene del <b>volumen</b>, no del precio.</li>
+<li>Pagos más altos en facultades medianas: Jurídicas ($7.6 M) y Comunicación ($6.9 M), que además inscribe más créditos (16.1).</li></ul></section>
+
+<section class="slide"><h2>Créditos promedio por periodo</h2>
+<div class="grid g2" style="align-items:center"><div class="img"><img alt="Créditos promedio matriculados por periodo" src="data:image/png;base64,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:
+- `<section class="slide cover on">...`
+- `<div class="sub">Pregunta problema</div>...`
+- and all tables, data, base64 image, scripts, etc.
+- Ends with:
+```html
+t2.innerHTML='<tr><th>Facultad</th><th>Estudiantes</th><th>Ingreso real (MM)</th><th>Ingreso CF neto (MM)</th><th>Diferencia (MM)</th><th>Variación</th></tr>'+B.map(r=>`<tr><td>${r[0]}</td><td>${f(r[1])}</td><td>${r[2].toFixed(2)}</td><td>${r[3].toFixed(2)}</td><td>−${Math.abs(r[4]).toFixed(2)}</td><td><span class="pill" style="background:${col(r[5])};color:${tc(r[5])}">−${Math.abs(r[5]).toFixed(2)}%</span></td></tr>`).join('');
+go(0);
+</script></body></html>
+```
