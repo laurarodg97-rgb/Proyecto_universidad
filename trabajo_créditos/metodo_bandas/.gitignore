@@ -1,0 +1,13 @@
+# La base de estudiantes no se sube al repositorio (ver README.md)
+datos/
+*.csv
+*.csv.gz
+*.xlsx
+*.rds
+*.RData
+.Rhistory
+
+# Parámetros y resultados agregados sí se publican
+!bandas.csv
+!resultados/
+!resultados/*.csv
