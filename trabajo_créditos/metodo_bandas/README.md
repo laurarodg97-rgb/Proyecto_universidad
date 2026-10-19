@@ -8,14 +8,14 @@ Cada estudiante-periodo cae en una banda según `CREDITOS_INSCRITOS` y paga una 
 
 | Banda | Bandas uniformes (`bandas.csv`) | Bandas por facultad |
 |---|---|---|
-| 1–6 | 0,50 × M | calibrada por facultad |
-| 7–11 | 0,75 × M | calibrada por facultad |
+| 1–6 | 0,50 × M | proporcional a la carga, por facultad |
+| 7–11 | 0,75 × M | proporcional a la carga, por facultad |
 | 12–18 | M | M |
 | 19+ | M + T × (créditos − 18) | M + T × (créditos − 18) |
 
 T es la tarifa plena por crédito (`TARIFA_PLENA_CREDITO_BASE`).
 
-**Bandas por facultad.** En cada facultad se multiplican las fracciones de 1–6 y 7–11 por un mismo factor hasta que su ingreso neto iguala el ingreso real. El resultado queda en `resultados/bandas_por_facultad.csv`.
+**Bandas por facultad.** En cada facultad, las bandas 1–6 y 7–11 cobran los créditos promedio que inscribe esa banda divididos por los créditos promedio de carga completa (12–18) de la misma facultad. El resultado queda en `resultados/bandas_por_facultad.csv`.
 
 **Beca.** El escenario neto descuenta la beca de cada estudiante, pero medida contra lo que hoy paga en mediana un estudiante sin subsidio de su misma facultad y banda (`PCT_BECA_BANDA`). Con `PCT_BECA_REAL` de `Proyecto_u.R`, el menor cobro que ya tiene hoy la carga parcial se tomaría como beca y se descontaría dos veces. En 12–18 créditos las dos medidas coinciden.
 
@@ -31,6 +31,6 @@ Requiere `tidyverse`; las tablas de `03_tablas_graficas.R` usan `gt` si está in
 | Archivo | Qué hace |
 |---|---|
 | `01_preparar_base.R` | Carga y limpieza de `Proyecto_u.R`, tarifas plenas y escenario por créditos |
-| `02_cobro_bandas.R` | Asigna bandas, calibra por facultad y calcula balances |
+| `02_cobro_bandas.R` | Asigna bandas, calcula las bandas por facultad y los balances |
 | `03_tablas_graficas.R` | Escribe `resultados/` (solo agregados) y `graficas/` |
 | `bandas.csv` | Cortes y fracciones; una fila con `FACULTAD` distinta de `TODAS` reemplaza las generales para esa facultad |

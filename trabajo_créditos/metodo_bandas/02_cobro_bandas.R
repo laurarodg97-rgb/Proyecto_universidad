@@ -15,8 +15,8 @@ library(tidyverse)
 #   - Cobro por créditos (el de Proyecto_u.R)
 #   - Bandas uniformes: bandas.csv, iguales para todas las facultades
 #   - Bandas por facultad: misma estructura, con las fracciones de
-#     las bandas parciales ajustadas en cada facultad para que su
-#     ingreso neto iguale al real (neutralidad de ingresos)
+#     las bandas parciales según los créditos que inscribe cada banda
+#     frente a la carga completa de su facultad
 
 parametros_bandas <- read_delim(
   "bandas.csv", delim = ";",
@@ -125,45 +125,37 @@ calcular_cobro <- function(base, parametros) {
 bandas_uniformes <- calcular_cobro(base_bandas, parametros_bandas)
 
 # ------------------------------------------------------------
-# Escenario 2: bandas por facultad, neutras en ingreso
+# Escenario 2: bandas por facultad, proporcionales a la carga
 # ------------------------------------------------------------
-# Se conservan 12–18 = M y el cobro extra en 19+. En cada facultad
-# se busca un factor k que multiplica las fracciones de las bandas
-# parciales (1–6 y 7–11, con tope en 1) hasta que el ingreso neto
-# por bandas iguala al ingreso real de esa facultad.
+# Se conservan 12–18 = M y el cobro extra en 19+. En cada facultad,
+# las bandas parciales (1–6 y 7–11) cobran la proporción de créditos
+# que inscriben frente a la carga completa de esa misma facultad:
+#   fracción = créditos promedio de la banda / créditos promedio de 12–18
+# Así cada facultad tiene bandas propias calculadas con sus datos.
 bandas_parciales <- bandas_base %>%
   dplyr::filter(FRACCION_MATRICULA < 1) %>%
   pull(BANDA)
 
-parametros_facultad <- function(fac, k) {
-  bandas_base %>%
-    mutate(
-      FACULTAD = fac,
-      FRACCION_MATRICULA = ifelse(BANDA %in% bandas_parciales,
-                                  pmin(FRACCION_MATRICULA * k, 1),
-                                  FRACCION_MATRICULA)
-    )
-}
+banda_completa <- bandas_base %>%
+  dplyr::filter(FRACCION_MATRICULA == 1, !COBRO_CREDITO_EXTRA) %>%
+  pull(BANDA)
 
-calibrar_facultad <- function(fac) {
-  base_fac <- base_bandas %>% dplyr::filter(FACULTAD == fac)
-  brecha <- function(k) {
-    sum(calcular_cobro(base_fac, parametros_facultad(fac, k))$INGRESO_BANDAS_NETO) -
-      sum(base_fac$VAL_PAGADO)
-  }
-  # Sin bandas parciales (k = 0) la facultad ya recauda de más:
-  # se deja la fracción en 0 y se reporta el excedente
-  if (brecha(0) >= 0) return(tibble(FACULTAD = fac, K = 0, NEUTRA = FALSE))
-  # Ni cobrando M completa en las bandas parciales alcanza
-  k_max <- 1 / min(bandas_base$FRACCION_MATRICULA)
-  if (brecha(k_max) <= 0) return(tibble(FACULTAD = fac, K = k_max, NEUTRA = FALSE))
-  tibble(FACULTAD = fac, K = uniroot(brecha, c(0, k_max), tol = 1e-6)$root, NEUTRA = TRUE)
-}
+creditos_banda_facultad <- base_bandas %>%
+  group_by(FACULTAD, BANDA) %>%
+  summarise(CREDITOS_PROMEDIO = mean(CREDITOS_INSCRITOS), .groups = "drop") %>%
+  group_by(FACULTAD) %>%
+  mutate(PROPORCION_CARGA = CREDITOS_PROMEDIO / CREDITOS_PROMEDIO[BANDA == banda_completa]) %>%
+  ungroup()
 
-calibracion_facultad <- map_dfr(sort(unique(base_bandas$FACULTAD)), calibrar_facultad)
-
-parametros_por_facultad <- calibracion_facultad %>%
-  pmap_dfr(function(FACULTAD, K, NEUTRA) parametros_facultad(FACULTAD, K)) %>%
+parametros_por_facultad <- tidyr::crossing(FACULTAD = sort(unique(base_bandas$FACULTAD)),
+                                           bandas_base %>% select(-FACULTAD)) %>%
+  left_join(creditos_banda_facultad %>%
+              mutate(BANDA = as.character(BANDA)) %>%
+              select(FACULTAD, BANDA, PROPORCION_CARGA),
+            by = c("FACULTAD", "BANDA")) %>%
+  mutate(FRACCION_MATRICULA = ifelse(BANDA %in% bandas_parciales,
+                                     pmin(PROPORCION_CARGA, 1),
+                                     FRACCION_MATRICULA)) %>%
   select(FACULTAD, BANDA, CREDITOS_MIN, CREDITOS_MAX, FRACCION_MATRICULA, COBRO_CREDITO_EXTRA)
 
 bandas_por_facultad <- calcular_cobro(base_bandas, parametros_por_facultad)
@@ -219,4 +211,3 @@ ganadores_bandas <- imap_dfr(escenarios, ~ .x %>%
   mutate(Escenario = .y, .before = 1))
 
 print(balance_global_bandas)
-print(calibracion_facultad)

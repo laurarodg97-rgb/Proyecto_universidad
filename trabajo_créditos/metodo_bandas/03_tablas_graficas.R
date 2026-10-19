@@ -54,14 +54,18 @@ nombre_corto <- function(x) str_to_sentence(str_remove(x, "^CIENCIAS (DE LA |DE 
 # ------------------------------------------------------------
 # Gráfica 1: variación del ingreso por facultad
 # ------------------------------------------------------------
-# Las bandas por facultad no se grafican aquí: están calibradas
-# para que cada facultad quede en 0 %.
 variacion_facultad <- balance_facultad_bandas %>%
   dplyr::filter(Escenario == "Bandas uniformes") %>%
   transmute(FACULTAD, `Cobro por créditos` = Variacion_Pct_CF,
             `Bandas uniformes` = Variacion_Pct_Bandas) %>%
+  left_join(
+    balance_facultad_bandas %>%
+      dplyr::filter(Escenario == "Bandas por facultad") %>%
+      transmute(FACULTAD, `Bandas por facultad` = Variacion_Pct_Bandas),
+    by = "FACULTAD"
+  ) %>%
   pivot_longer(-FACULTAD, names_to = "Escenario", values_to = "Variacion") %>%
-  mutate(Escenario = factor(Escenario, levels = names(colores_escenario)[1:2]))
+  mutate(Escenario = factor(Escenario, levels = names(colores_escenario)))
 
 orden_facultad <- variacion_facultad %>%
   dplyr::filter(Escenario == "Cobro por créditos") %>%
@@ -74,11 +78,11 @@ grafica_variacion <- variacion_facultad %>%
   geom_col(position = position_dodge2(width = 0.78, reverse = TRUE), width = 0.72) +
   geom_hline(yintercept = 0, color = "#000000", linewidth = 0.6) +
   coord_flip() +
-  scale_fill_manual(values = colores_escenario[1:2], name = NULL) +
+  scale_fill_manual(values = colores_escenario, name = NULL) +
   scale_y_continuous(labels = label_number(suffix = " %", accuracy = 1)) +
   labs(
     title = "Variación del ingreso por facultad según el esquema de cobro",
-    subtitle = "Escenario neto frente al ingreso real, 2021-1 a 2026-1. Las bandas por facultad quedan en 0 % por diseño",
+    subtitle = "Escenario neto frente al ingreso real observado, 2021-1 a 2026-1",
     x = NULL, y = "Variación (%)"
   ) +
   tema_presentacion
@@ -111,7 +115,7 @@ grafica_fracciones <- ggplot(fracciones, aes(x = FACULTAD, y = Fraccion, fill = 
   scale_y_continuous(labels = label_percent(accuracy = 1), limits = c(0, 1)) +
   labs(
     title = "Cobro de la carga parcial como % de la matrícula plena",
-    subtitle = "Bandas por facultad calibradas para mantener el ingreso de cada facultad",
+    subtitle = "Bandas por facultad: créditos de la banda frente a la carga completa de cada facultad",
     x = NULL, y = "% de la matrícula plena"
   ) +
   tema_presentacion +
