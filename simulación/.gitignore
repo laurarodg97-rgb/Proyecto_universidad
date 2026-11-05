@@ -1,0 +1,14 @@
+# La base de estudiantes no se sube nunca (ver README.md)
+datos/
+*_anon*
+OFERTA_ACADEMICA*
+*.xlsx
+
+# Entorno y salidas locales
+.env
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.ipynb_checkpoints/
+*.db

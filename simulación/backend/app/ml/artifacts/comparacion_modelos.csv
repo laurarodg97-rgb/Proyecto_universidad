@@ -1,0 +1,11 @@
+modelo;r2_cv;mae_cv_mm;metodo
+Polinómica grado 3 (Ridge);1,000000;0,000011;creditos
+Red neuronal (MLP);0,999989;0,301724;creditos
+Random Forest;0,999851;1,036111;creditos
+Gradient Boosting;0,999843;1,118638;creditos
+Regresión lineal;0,966903;17,090498;creditos
+Red neuronal (MLP);0,999980;0,163339;bandas
+Polinómica grado 3 (Ridge);0,999456;0,944830;bandas
+Gradient Boosting;0,998996;1,173657;bandas
+Random Forest;0,997529;1,785436;bandas
+Regresión lineal;0,988525;4,327731;bandas

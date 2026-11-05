@@ -1,0 +1,26 @@
+# Despliegue en Render (free tier): New → Blueprint → este repositorio.
+services:
+  - type: web
+    name: simulador-equilibrio-api
+    runtime: docker
+    rootDir: trabajo_créditos/simulacion_ml/backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: ENTORNO
+        value: produccion
+      - key: DATABASE_URL
+        value: sqlite:////tmp/simulaciones.db
+  - type: web
+    name: simulador-equilibrio-tablero
+    runtime: docker
+    rootDir: trabajo_créditos/simulacion_ml/frontend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: simulador-equilibrio-api
+          type: web
+          property: host

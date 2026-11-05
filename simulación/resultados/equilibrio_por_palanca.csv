@@ -1,0 +1,5 @@
+Metodo;Palanca;Descripcion;Valor_equilibrio;Cambio_pct
+Créditos;factor_tarifa;Multiplica la tarifa plena por crédito T;1,114888;11,488846
+Bandas;k_parcial;Multiplica las fracciones de 1-6 y 7-11 (tope 1);1,278385;27,838538
+Bandas;ajuste_plena;Multiplica la matrícula plena M en todas las bandas;1,022143;2,214271
+Bandas;tarifa_extra;Multiplica T en el cobro por crédito sobre 18;2,452063;145,206313

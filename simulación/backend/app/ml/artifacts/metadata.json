@@ -1,0 +1,35 @@
+{
+  "entrenado": "2026-10-26T20:16:13.568290+00:00",
+  "sklearn_version": "1.9.1",
+  "semilla": 42,
+  "modelos": {
+    "creditos": {
+      "archivo": "modelo_creditos.joblib",
+      "modelo": "Polinómica grado 3 (Ridge)",
+      "variables": [
+        "factor_tarifa",
+        "elasticidad"
+      ],
+      "r2_cv": 0.9999999999999887,
+      "mae_cv_mm": 1.1142524890279437e-05,
+      "r2_prueba": 0.9999999999999927,
+      "mae_prueba_mm": 9.307801642265135e-06,
+      "n_escenarios": 4000
+    },
+    "bandas": {
+      "archivo": "modelo_bandas.joblib",
+      "modelo": "Red neuronal (MLP)",
+      "variables": [
+        "k_parcial",
+        "ajuste_plena",
+        "tarifa_extra",
+        "elasticidad"
+      ],
+      "r2_cv": 0.9999795419639966,
+      "mae_cv_mm": 0.16333941511620692,
+      "r2_prueba": 0.9999795658664289,
+      "mae_prueba_mm": 0.15587792628219643,
+      "n_escenarios": 4000
+    }
+  }
+}

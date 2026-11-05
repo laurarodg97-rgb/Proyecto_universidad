@@ -1,0 +1,44 @@
+# Pruebas y construcción de imágenes del simulador de equilibrio en cada push
+name: simulacion_ml
+
+on:
+  push:
+    paths:
+      - "trabajo_créditos/simulacion_ml/**"
+      - ".github/workflows/simulacion_ml.yml"
+  pull_request:
+    paths:
+      - "trabajo_créditos/simulacion_ml/**"
+      - ".github/workflows/simulacion_ml.yml"
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: trabajo_créditos/simulacion_ml/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: trabajo_créditos/simulacion_ml/backend/requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: python -m pytest -v
+
+  imagenes:
+    needs: pruebas
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: trabajo_créditos/simulacion_ml
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t simulador-api ./backend
+      - run: docker build -t simulador-tablero ./frontend
+      - name: La imagen arranca y responde /health
+        run: |
+          docker run -d -p 8000:8000 --name api simulador-api
+          for i in $(seq 1 30); do curl -sf localhost:8000/health && exit 0; sleep 2; done
+          docker logs api; exit 1
